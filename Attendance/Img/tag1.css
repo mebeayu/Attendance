@@ -1,0 +1,179 @@
+﻿.tag_style_1 {
+    color: white;
+    padding: 5px;
+    background: #FFC0CB;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin:4px 4px 4px 4px;
+}
+
+.tag_style_2 {
+    color: white;
+    padding: 5px;
+    background: #EE82EE;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+
+.tag_style_3 {
+    color: white;
+    padding: 5px;
+    background: #ffd800;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+
+.tag_style_4 {
+    color: white;
+    padding: 5px;
+    background: #87CEFA;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+
+.tag_style_5 {
+    color: white;
+    padding: 5px;
+    background: #32CD32;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+
+.tag_style_6 {
+    color: white;
+    padding: 5px;
+    background: #F5DEB3;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+
+.tag_style_7 {
+    color: white;
+    padding: 5px;
+    background: #FF6347;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+.tag_style_8 {
+    color: white;
+    padding: 5px;
+    background: #1E90FF;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+.tag_style_9 {
+    color: white;
+    padding: 5px;
+    background: #FF8C00;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+.tag_style_10 {
+    color: white;
+    padding: 5px;
+    background: #40E0D0;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #888888;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+}
+.tag_style_normal {
+    color: #808080;
+    padding: 5px;
+    background: white;
+    font-size: 12px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 1px #cccccc;
+    white-space: nowrap; /*强制span不换行*/
+    display: inline-block; /*将span当做块级元素对待*/
+    margin: 4px 4px 4px 4px;
+    /*border: dotted;*/
+    border-color: #eeeeee;
+}
+
+.tag_style_1:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+
+.tag_style_2:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+
+.tag_style_3:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+
+.tag_style_4:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+
+.tag_style_5:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+
+.tag_style_6:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+
+.tag_style_7:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+.tag_style_8:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+.tag_style_9:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+.tag_style_10:hover {
+    box-shadow: 0px 0px 1px #888888;
+}
+.tag_style_normal:hover {
+    box-shadow: 0px 0px 1px #cccccc;
+}
+.question_preview {
+    padding: 5px;
+    background-color: white;
+    box-shadow: 1px 2px 2px 1px #cccccc;
+    margin-bottom: 5px;
+    position: relative;
+}
+    .question_preview:hover {
+        background-color: #f7f6ee;
+    }
