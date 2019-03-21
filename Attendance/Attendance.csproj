@@ -155,6 +155,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\LeaveQuest.cs" />
+    <Compile Include="Models\TokenObj.cs" />
+    <Compile Include="Models\Trip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +170,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="js\att_index.js" />
     <Content Include="js\oa_leave.js" />
+    <Content Include="js\oa_trip.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
@@ -192,6 +195,7 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Att\Index.cshtml" />
     <Content Include="Views\Att\StcOALeave.cshtml" />
+    <Content Include="Views\Att\StcOATrip.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

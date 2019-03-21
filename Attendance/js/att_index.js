@@ -10,7 +10,7 @@ function stc_leave() {
     $("#iframe_maincontent").attr("src", "/Att/StcOALeave");
 }
 function stc_cc() {
-    //$("#iframe_maincontent").attr("src", "/OA/StcOALeave");
+    $("#iframe_maincontent").attr("src", "/Att/StcOATrip");
 }
 
 function myformatter(date) {

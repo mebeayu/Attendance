@@ -17,5 +17,9 @@ namespace Attendance.Controllers
         {
             return View();
         }
+        public ActionResult StcOATrip()
+        {
+            return View();
+        }
     }
 }
