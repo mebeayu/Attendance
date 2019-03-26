@@ -46,6 +46,10 @@ function LoadDays() {
         dataType: "json"
     });
 }
+function formatNum(val, row) {
+    if (val === 0) return "";
+    else return val;
+}
 function myformatter(date) {
     var y = date.getFullYear();
     var m = date.getMonth() + 1;
