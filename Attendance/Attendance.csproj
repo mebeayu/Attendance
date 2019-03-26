@@ -145,6 +145,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Common\AttBiz.cs" />
     <Compile Include="Common\DataResult.cs" />
     <Compile Include="Common\DB.cs" />
     <Compile Include="Common\DES.cs" />
@@ -155,6 +156,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\LeaveQuest.cs" />
+    <Compile Include="Models\PersonStc.cs" />
     <Compile Include="Models\TokenObj.cs" />
     <Compile Include="Models\Trip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -171,6 +173,7 @@
     <Content Include="js\att_index.js" />
     <Content Include="js\oa_leave.js" />
     <Content Include="js\oa_trip.js" />
+    <Content Include="js\stc_att.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
@@ -196,6 +199,7 @@
     <Content Include="Views\Att\Index.cshtml" />
     <Content Include="Views\Att\StcOALeave.cshtml" />
     <Content Include="Views\Att\StcOATrip.cshtml" />
+    <Content Include="Views\Att\StcAttr.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

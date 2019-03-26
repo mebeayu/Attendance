@@ -12,7 +12,9 @@ function stc_leave() {
 function stc_cc() {
     $("#iframe_maincontent").attr("src", "/Att/StcOATrip");
 }
-
+function stc_att() {
+    $("#iframe_maincontent").attr("src", "/Att/StcAttr");
+}
 function myformatter(date) {
     var y = date.getFullYear();
     var m = date.getMonth() + 1;

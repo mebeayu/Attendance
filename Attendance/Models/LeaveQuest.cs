@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Contract.Models
+namespace Attendance.Models
 {
     public class LeaveQuest
     {
@@ -11,6 +11,8 @@ namespace Contract.Models
         /// 姓名
         /// </summary>
         public string LASTNAME { get; set; }
+        public string uid { get; set; }
+        public string MOBILE { get; set; }
         /// <summary>
         /// 用户ID
         /// </summary>

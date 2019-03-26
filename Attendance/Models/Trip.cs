@@ -8,6 +8,7 @@ namespace Attendance.Models
     public class Trip
     {
         public string UID { get; set; }
+        public string MOBILE { get; set; }
         public string REQUESTID { get; set; }
         public string LASTNAME { get; set; }
         public string Title { get; set; }//CC3

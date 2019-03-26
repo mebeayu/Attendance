@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-namespace Contract.Common
+namespace Attendance.Common
 {
     public class MD5
     {

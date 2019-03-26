@@ -21,5 +21,9 @@ namespace Attendance.Controllers
         {
             return View();
         }
+        public ActionResult StcAttr()
+        {
+            return View();
+        }
     }
 }
