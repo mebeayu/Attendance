@@ -8,7 +8,7 @@ using System.IO;
 using System.Reflection;
 using Attendance.Models;
 
-namespace AttClient
+namespace Attendance.Common
 {
     public class Excel
     {

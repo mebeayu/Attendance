@@ -44,7 +44,7 @@ namespace Attendance.Common
                 row.MOBILE = ds.Tables[0].Rows[i]["MOBILE"].ToString();
                 row.LASTNAME = ds.Tables[0].Rows[i]["LASTNAME"].ToString();
                 row.xjsq5 = ds.Tables[0].Rows[i]["xjsq5"].ToString();
-                row.xjsq19 = ds.Tables[0].Rows[i]["xjsq19"].ToString();
+                //row.xjsq19 = ds.Tables[0].Rows[i]["xjsq19"].ToString();
                 int type = -1;
                 try
                 {
@@ -55,8 +55,18 @@ namespace Attendance.Common
                     type = -1;
                 }
                 row.xjsq9 = type.ToString();
+
                 row.xjsq10 = ds.Tables[0].Rows[i]["xjsq10"].ToString();
                 row.xjsq17 = ds.Tables[0].Rows[i]["xjsq17"].ToString();
+                DateTime start = DateTime.Parse(obj.StartDate);
+                DateTime end = DateTime.Parse(obj.EndDate);
+
+                DateTime s = DateTime.Parse(row.xjsq10);
+                DateTime e = DateTime.Parse(row.xjsq17);
+                if (s < start) s = start;
+                if (e > end) e = end;
+                TimeSpan timeSpan = e - s;
+                row.xjsq19 = (timeSpan.Days+1).ToString();
                 row.NOWNODETYPE = int.Parse(ds.Tables[0].Rows[i]["NOWNODETYPE"].ToString());
                 list.Add(row);
 
@@ -128,7 +138,8 @@ namespace Attendance.Common
         public List<string> GetUIDinDate(string start_date, string end_date, List<Trip> list_trip)
         {
             List<string> arrUID = new List<string>();
-            DataSet ds= dboa.ExeQuery($@"select distinct xjsq5 from formtable_main_242 where xjsq10>='{start_date}' and xjsq10<='{end_date}'");
+            DataSet ds= dboa.ExeQuery($@"select distinct xjsq5 from formtable_main_242 where 
+            ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
             int n = ds.Tables[0].Rows.Count;
             for (int i = 0; i < n; i++)
             {
@@ -155,7 +166,8 @@ namespace Attendance.Common
         }
         public Person QueryPersonAtt(string  uid,string start_date,string end_date, List<Trip> list_trip)
         {
-            DataSet ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID=b.ID where a.id={uid}");
+            DataSet ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME from HRMRESOURCE a 
+            left join HRMDEPARTMENT b on a.DEPARTMENTID=b.ID where a.id={uid}");
             if (ds.Tables[0].Rows.Count==0)
             {
                 return null;
@@ -165,7 +177,9 @@ namespace Attendance.Common
             p.LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
             p.MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
             p.Department = ds.Tables[0].Rows[0]["DEPARTMENTNAME"].ToString();
-            ds = dboa.ExeQuery($@"select * from formtable_main_242 where xjsq5={uid} and xjsq10>='{start_date}' and xjsq10<='{end_date}'");
+            ds = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
+            where xjsq5={uid} and b.NOWNODETYPE=3 and 
+            ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
             Dictionary<int, double> dic = new Dictionary<int, double>();
             dic.Add(0, 0);
             dic.Add(1, 0);
@@ -178,8 +192,18 @@ namespace Attendance.Common
             int n = ds.Tables[0].Rows.Count;
             for (int i = 0; i < n; i++)
             {
+                DateTime start = DateTime.Parse(start_date);
+                DateTime end = DateTime.Parse(end_date);
+
+                DateTime s = DateTime.Parse(ds.Tables[0].Rows[i]["xjsq10"].ToString());
+                DateTime e = DateTime.Parse(ds.Tables[0].Rows[i]["xjsq17"].ToString());
+
+                if (s < start) s = start;
+                if (e > end) e = end;
+                TimeSpan timeSpan = e - s;
+
                 int type = StringToInt(ds.Tables[0].Rows[i]["xjsq9"].ToString());
-                dic[type] = dic[type] + StringToFloat(ds.Tables[0].Rows[i]["xjsq19"].ToString());
+                dic[type] = dic[type] + (timeSpan.Days+1);
             }
             //0事假 1病假 2婚假 3产假 4丧假 5年休假 6其他 7陪产假
             p.Leave0 = dic[0];
@@ -199,6 +223,77 @@ namespace Attendance.Common
             }
 
             return p;
+        }
+        public List<Person> GetPersonBaseFromExcel(string path)
+        {
+            Excel excel = new Excel();
+            List<Person> list = new List<Person>();
+            DBOA dboa = new DBOA();
+            excel.OpenExcel(path);
+            int index = 4;
+            while (true)
+            {
+                Person p = new Person();
+                p.LASTNAME = excel.GetCellValue("A", index);
+                if (p.LASTNAME == "" || p.LASTNAME == null) break;
+                p.WorkDay = int.Parse(excel.GetCellValue("D", index));
+                p.AttDay = int.Parse(excel.GetCellValue("E", index));
+                p.LateCount = int.Parse(excel.GetCellValue("F", index));
+                p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
+
+                DataSet ds = dboa.ExeQuery($@"select ID from HRMRESOURCE where LASTNAME='{p.LASTNAME}' and SUBCOMPANYID1=68");
+                if (ds.Tables[0].Rows.Count == 0) p.UID = "";
+                else p.UID = ds.Tables[0].Rows[0][0].ToString();
+                list.Add(p);
+                index += 2;
+
+            }
+            dboa.Close();
+            excel.CloseExcel();
+            return list;
+        }
+        public List<Person> StcAttFromLoaclExcel(string path,string start_date,string end_date)
+        {
+            List<Person> list = GetPersonBaseFromExcel(path);
+            List<string> arrUIDs = new List<string>();
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].UID != "") arrUIDs.Add(list[i].UID);
+            }
+            Trip t = new Trip();
+            t.StartDate = start_date;
+            t.EndDate = end_date;
+            t.UID = "";
+            t.LASTNAME = "";
+            List<Trip> list_trip = QueryTrip(t);
+            List<Person> list_oa = QueryAttList(arrUIDs, start_date, end_date, list_trip);
+            for (int i = 0; i < list.Count; i++)
+            {
+                Person p = FindPerson(list[i].UID, list_oa);
+                if (p != null)
+                {
+                    list[i].MOBILE = p.MOBILE;
+                    list[i].Department = p.Department;
+                    list[i].Trip = p.Trip;
+                    list[i].Leave0 = p.Leave0;
+                    list[i].Leave1 = p.Leave1;
+                    list[i].Leave2 = p.Leave2;
+                    list[i].Leave3 = p.Leave3;
+                    list[i].Leave4 = p.Leave4;
+                    list[i].Leave5 = p.Leave5;
+                    list[i].Leave6 = p.Leave6;
+                    list[i].Leave7 = p.Leave7;
+                }
+            }
+            return list;
+        }
+        private Person FindPerson(string UID, List<Person> list_oa)
+        {
+            for (int i = 0; i < list_oa.Count; i++)
+            {
+                if (list_oa[i].UID == UID) return list_oa[i];
+            }
+            return null;
         }
         private double StringToFloat(string num)
         {

@@ -31,40 +31,8 @@ namespace AttClient
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 string strFileName = ofd.FileName;
-                AttLogic att = new AttLogic();
-                list = att.GetPersonBase(strFileName);
-                List<string> arrUIDs = new List<string>();
-                for (int i = 0; i < list.Count; i++)
-                {
-                    if (list[i].UID != "") arrUIDs.Add(list[i].UID);
-                }
                 AttBiz attBiz = new AttBiz();
-                Trip t = new Trip();
-                t.StartDate = StartDate.Value.ToString("yyyy-MM-dd");
-                t.EndDate = EndDate.Value.ToString("yyyy-MM-dd");
-                t.UID = "";
-                t.LASTNAME = "";
-
-                List<Trip> list_trip = attBiz.QueryTrip(t);
-                List<Person> list_oa = attBiz.QueryAttList(arrUIDs,t.StartDate,t.EndDate, list_trip);
-                for (int i = 0; i < list.Count; i++)
-                {
-                    Person p = FindPerson(list[i].UID, list_oa);
-                    if(p!=null)
-                    {
-                        list[i].MOBILE = p.MOBILE;
-                        list[i].Department = p.Department;
-                        list[i].Trip = p.Trip;
-                        list[i].Leave0 = p.Leave0;
-                        list[i].Leave1 = p.Leave1;
-                        list[i].Leave2 = p.Leave2;
-                        list[i].Leave3 = p.Leave3;
-                        list[i].Leave4 = p.Leave4;
-                        list[i].Leave5 = p.Leave5;
-                        list[i].Leave6 = p.Leave6;
-                        list[i].Leave7 = p.Leave7;
-                    }
-                }
+                list = attBiz.StcAttFromLoaclExcel(strFileName, StartDate.Value.ToString("yyyy-MM-dd"), EndDate.Value.ToString("yyyy-MM-dd"));
                 int n = list.Count;
                 listView.Items.Clear();
                 for (int i = 0; i < n; i++)
@@ -90,14 +58,7 @@ namespace AttClient
                 }
             }
         }
-        private Person FindPerson(string UID,List<Person> list_oa)
-        {
-            for (int i = 0; i < list_oa.Count; i++)
-            {
-                if (list_oa[i].UID == UID) return list_oa[i];
-            }
-            return null;
-        }
+        
         private void Form1_Load(object sender, EventArgs e)
         {
             

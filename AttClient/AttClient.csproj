@@ -54,7 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttLogic.cs" />
-    <Compile Include="Excel.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
