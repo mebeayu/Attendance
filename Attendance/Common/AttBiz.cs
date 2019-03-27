@@ -28,12 +28,11 @@ namespace Attendance.Common
                 obj.LASTNAME = "";
             }
             
-            DataSet ds = dboa.ExeQuery(@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+            DataSet ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
                 (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
-                where xjsq10>=:StartDate and xjsq10<=:EndDate and b.LASTNAME like :LASTNAME and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
-                new OracleParameter("StartDate", obj.StartDate),
-                new OracleParameter("EndDate", obj.EndDate),
+                where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
+                b.LASTNAME like :LASTNAME and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
                 new OracleParameter("LASTNAME", "%" + obj.LASTNAME + "%"));
            
             int n = ds.Tables[0].Rows.Count;
@@ -71,13 +70,11 @@ namespace Attendance.Common
                 obj.LASTNAME = "";
             }
             
-            DataSet ds = dboa.ExeQuery(@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+            DataSet ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
-                where CC4>=:StartDate and CC4<=:EndDate and 
+                where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
                 b.LASTNAME like :LASTNAME and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
-                new OracleParameter("StartDate", obj.StartDate),
-                new OracleParameter("EndDate", obj.EndDate),
                 new OracleParameter("LASTNAME", "%" + obj.LASTNAME + "%"));
 
             int n = ds.Tables[0].Rows.Count;
@@ -93,8 +90,14 @@ namespace Attendance.Common
                 trip.REQUESTID = ds.Tables[0].Rows[i]["REQUESTID"].ToString();
                 trip.StartDate = ds.Tables[0].Rows[i]["CC4"].ToString();
                 trip.EndDate = ds.Tables[0].Rows[i]["CC5"].ToString();
+
                 DateTime s = DateTime.Parse(trip.StartDate);
                 DateTime e = DateTime.Parse(trip.EndDate);
+
+                DateTime start = DateTime.Parse(obj.StartDate);
+                DateTime end = DateTime.Parse(obj.EndDate);
+                if (s < start) s = start;
+                if (e > end) e = end;
                 TimeSpan timeSpan = e - s;
                 trip.Days = timeSpan.Days + 1;
                 list.Add(trip);
@@ -152,7 +155,7 @@ namespace Attendance.Common
         }
         public Person QueryPersonAtt(string  uid,string start_date,string end_date, List<Trip> list_trip)
         {
-            DataSet ds = dboa.ExeQuery($@"select LASTNAME,MOBILE from HRMRESOURCE where id={uid}");
+            DataSet ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID=b.ID where a.id={uid}");
             if (ds.Tables[0].Rows.Count==0)
             {
                 return null;
@@ -161,6 +164,7 @@ namespace Attendance.Common
             p.UID = uid;
             p.LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
             p.MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
+            p.Department = ds.Tables[0].Rows[0]["DEPARTMENTNAME"].ToString();
             ds = dboa.ExeQuery($@"select * from formtable_main_242 where xjsq5={uid} and xjsq10>='{start_date}' and xjsq10<='{end_date}'");
             Dictionary<int, double> dic = new Dictionary<int, double>();
             dic.Add(0, 0);

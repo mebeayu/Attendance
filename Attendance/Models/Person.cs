@@ -10,6 +10,9 @@ namespace Attendance.Models
         public string UID { get; set; }
         public string MOBILE { get; set; }
         public string LASTNAME { get; set; }
+        public string Department { get; set; }
+        public int WorkDay { get; set; }
+        public int AttDay { get; set; }
         public float LateCount { get; set; }
         public float EarlyCount { get; set; }
         public int Trip { get; set; }
