@@ -120,7 +120,7 @@ namespace Attendance.Common
                     trip1.UID = arrIDs[j];
 
                     DataSet ds1 = dboa.ExeQuery($@"select LASTNAME,MOBILE from HRMRESOURCE where id={trip1.UID}");
-                    trip.MOBILE = ds1.Tables[0].Rows[0][1].ToString();
+                    trip1.MOBILE = ds1.Tables[0].Rows[0][1].ToString();
                     trip1.LASTNAME = ds1.Tables[0].Rows[0][0].ToString();
                     trip1.Title = trip.Title;
                     trip1.Path = trip.Path;

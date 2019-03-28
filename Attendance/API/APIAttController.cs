@@ -12,6 +12,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web;
+using System.IO;
 
 namespace Attendance.API
 {
@@ -161,6 +163,38 @@ namespace Attendance.API
             data.data = p;
             return data;
 
+        }
+        [HttpPost]
+        [ActionName("StcAttOld")]
+        public DataResult StcAttOld()
+        {
+            string uploadPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Upload\\";
+            HttpRequest request = System.Web.HttpContext.Current.Request;
+            HttpFileCollection fileCollection = request.Files;
+            var formData = request.Form;
+            string start_date = formData["start_time"];
+            string end_date = formData["end_time"];
+            if (fileCollection.Count > 0)
+            {
+                // 获取文件
+                HttpPostedFile httpPostedFile = fileCollection[0];
+                // 文件扩展名
+                string fileExtension = Path.GetExtension(httpPostedFile.FileName);
+                // 名称
+                string fileName = httpPostedFile.FileName;
+                // 上传路径
+                string filePath = uploadPath + fileName;
+                httpPostedFile.SaveAs(filePath);
+
+                AttBiz att = new AttBiz();
+                List<Person> list =  att.StcAttFromLoaclExcel(filePath, start_date, end_date);
+                att.Close();
+                DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+                data.data = list;
+                return data;
+
+            }
+            return null;
         }
         public string TranLeaveType(int type)
         {

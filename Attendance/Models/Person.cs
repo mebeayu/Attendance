@@ -28,5 +28,8 @@ namespace Attendance.Models
 
         public string StartDate { get; set; }
         public string EndDate { get; set; }
+
+        public string Base64 { get; set; }
+        public string fileName { get; set; }
     }
 }

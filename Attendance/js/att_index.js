@@ -12,8 +12,11 @@ function stc_leave() {
 function stc_cc() {
     $("#iframe_maincontent").attr("src", "/Att/StcOATrip");
 }
-function stc_att() {
+function stc_leave_cc() {
     $("#iframe_maincontent").attr("src", "/Att/StcAttr");
+}
+function stc_att_old() {
+    $("#iframe_maincontent").attr("src", "/Att/StcAttrOld");
 }
 function myformatter(date) {
     var y = date.getFullYear();
