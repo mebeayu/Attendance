@@ -17,7 +17,7 @@ function LoadDays() {
     var list = [];
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
     $('#dg').datagrid('loadData', list);
-    var request_data = { LASTNAME: LASTNAME, StartDate: s, EndDate: e };
+    var request_data = {Token:Token, LASTNAME: LASTNAME, StartDate: s, EndDate: e };
     console.log(request_data);
     var url = "/API/APIAtt/QueryTrip";
     $.ajax({

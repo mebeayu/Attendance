@@ -7,6 +7,7 @@ namespace Attendance.Models
 {
     public class Trip
     {
+        public string Token { get; set; }
         public string UID { get; set; }
         public string MOBILE { get; set; }
         public string REQUESTID { get; set; }

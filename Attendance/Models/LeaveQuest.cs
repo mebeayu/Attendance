@@ -7,6 +7,7 @@ namespace Attendance.Models
 {
     public class LeaveQuest
     {
+        public string Token { get; set; }
         /// <summary>
         /// 姓名
         /// </summary>

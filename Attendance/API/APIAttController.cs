@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web;
 using System.IO;
+using System.Data.SqlClient;
 
 namespace Attendance.API
 {
@@ -101,11 +102,75 @@ namespace Attendance.API
             return tokenObj;
         }
         [HttpPost]
+        [ActionName("Login")]
+        public DataResult Login([FromBody]LoginRequest obj)
+        {
+
+            DBOA dboa = new DBOA();
+            DataSet ds = dboa.ExeQuery("select LOGINID,PASSWORD,LASTNAME,MOBILE,DEPARTMENTID from HRMRESOURCE where LOGINID=:LOGINID", new OracleParameter("LOGINID", obj.uid));
+            dboa.Close();
+            if (ds == null) return DataResult.InitFromMessageCode(MessageCode.ERROR_EXECUTE_SQL);
+            if (ds.Tables[0].Rows.Count == 0) return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
+            string md5PSW = MD5.GetMD5Hash(obj.psw);
+            if (md5PSW != ds.Tables[0].Rows[0]["PASSWORD"].ToString()) return DataResult.InitFromMessageCode(MessageCode.ERROR_PASSWORD);
+            string LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
+            string MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
+            string DEPARTMENTID = ds.Tables[0].Rows[0]["DEPARTMENTID"].ToString();
+            DBHR dbhr = new DBHR();
+            ds = dbhr.ExeQuery("select oa_dept_path from oa_dept where oa_dept_id=@oa_dept_id", new SqlParameter("oa_dept_id", DEPARTMENTID));
+            dbhr.Close();
+            string department_path = "";
+            if (ds.Tables[0].Rows.Count > 0)
+            {
+                department_path = ds.Tables[0].Rows[0][0].ToString();
+            }
+            DB db = new DB();
+            ds = db.ExeQuery("select * from login_user where uid=@uid", new SqlParameter("uid", obj.uid));
+            string type = "0";
+            if (ds.Tables[0].Rows.Count == 0)
+            {
+                int res = db.ExeCMD(@"insert into login_user(uid,name,mobile,department_id,department_path) 
+                                    values(@uid,@name,@mobile,@department_id,@department_path)",
+                                    new SqlParameter("uid", obj.uid),
+                                    new SqlParameter("name", LASTNAME),
+                                    new SqlParameter("mobile", MOBILE),
+                                    new SqlParameter("department_id", DEPARTMENTID),
+                                    new SqlParameter("department_path", department_path));
+            }
+            else
+            {
+                type = ds.Tables[0].Rows[0]["type"].ToString();
+                int res = db.ExeCMD("update login_user set name=@name,mobile=@mobile,department_id=@department_id,department_path=@department_path where uid=@uid",
+                                    new SqlParameter("uid", obj.uid),
+                                    new SqlParameter("name", LASTNAME),
+                                    new SqlParameter("mobile", MOBILE),
+                                    new SqlParameter("department_id", DEPARTMENTID),
+                                    new SqlParameter("department_path", department_path));
+            }
+            db.Close();
+            DataResult return_data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            string Token = MakeToken(obj.uid, obj.psw, type, DEPARTMENTID);
+            UserInfo u = new UserInfo();
+            u.Token = Token;
+            u.name = LASTNAME;
+            u.type = type;
+            u.department_id = DEPARTMENTID;
+            u.department_path = department_path;
+            tokenCache[obj.uid] = Token;
+            return_data.data = u;
+            return return_data;
+        }
+        [HttpPost]
         [ActionName("QueryLeave")]
         public DataResult QueryLeave([FromBody]LeaveQuest obj)
         {
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
             AttBiz attbiz = new AttBiz();
-            List<LeaveQuest> list = attbiz.QueryLeave(obj);
+            List<LeaveQuest> list = attbiz.QueryLeave(obj, tokenObj);
             attbiz.Close();
             int n = list.Count;
             for (int i = 0; i < n; i++)
@@ -120,8 +185,13 @@ namespace Attendance.API
         [ActionName("QueryTrip")]
         public DataResult QueryTrip([FromBody]Trip obj)
         {
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
             AttBiz attbiz = new AttBiz();
-            List<Trip> list = attbiz.QueryTrip(obj);
+            List<Trip> list = attbiz.QueryTrip(obj, tokenObj);
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = list;
@@ -131,6 +201,11 @@ namespace Attendance.API
         [ActionName("QueryAttList")]
         public DataResult QueryAttList([FromBody]Person obj)
         {
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
             AttBiz attbiz = new AttBiz();
             Trip t = new Trip();
             t.StartDate = obj.StartDate;
@@ -138,8 +213,16 @@ namespace Attendance.API
             t.UID = obj.UID;
             t.LASTNAME = "";
             List<Trip> list_trip = attbiz.QueryTrip(t);
-
-            List<string> arrUID = attbiz.GetUIDinDate(obj.StartDate,obj.EndDate,list_trip);
+            List<string> arrUID = new List<string>();
+            if (tokenObj.type == "0")
+            {
+                string oa_id = attbiz.GetOAUIDByLoginID(tokenObj.uid);
+                if (oa_id != null) arrUID.Add(oa_id);
+            }
+            else
+            {
+               arrUID = attbiz.GetUIDinDate(obj.StartDate, obj.EndDate, list_trip);
+            }
             List<Person> list = attbiz.QueryAttList(arrUID, obj.StartDate, obj.EndDate, list_trip);
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);

@@ -19,15 +19,38 @@
     <div class="easyui-panel" style="padding:5px;width:100%;">
         <table width="100%">
             <tr>
-                <td width="50%">
+                <td id="memu1" width="50%">
                     <a href="javascript:void(0)" id="hospital" class="easyui-linkbutton" onclick="stc_leave()" data-options="plain:true"><img src="/img/tag_blue.png">休假明细</a>
                     <a href="javascript:void(0)" id="hospital" class="easyui-linkbutton" onclick="stc_cc()" data-options="plain:true"><img src="/img/doc.png">出差明细</a>
                     <a href="javascript:void(0)" id="hospital" class="easyui-linkbutton" onclick="stc_leave_cc()" data-options="plain:true"><img src="/img/doc.png">休假出差报表</a>
                     <a href="javascript:void(0)" id="hospital" class="easyui-linkbutton" onclick="stc_att_old()" data-options="plain:true"><img src="/img/doc.png">老版考勤报表</a>
                 </td>
+                <td width="50%" align="right">
+                    @*<a href="javascript:void(0)" id="department_path" class="easyui-linkbutton" onclick="" data-options="plain:true"></a>*@
+                    <a class="easyui-linkbutton" data-options="plain:true" id="show_id"></a><a href="javascript:void(0)" id="btn_out" onclick="Logout()" class="easyui-linkbutton" data-options="plain:true">退出登录</a>
+                </td>
             </tr>
         </table>
     </div>
-    <iframe id="iframe_maincontent" src="/Att/StcOALeave" width="100%" height="98%" frameborder="0" scrolling="auto"></iframe>
+    <iframe id="iframe_maincontent" src="" width="100%" height="98%" frameborder="0" scrolling="auto"></iframe>
+    @*登录对话框*@
+    <div id="dlg_login" class="easyui-dialog" title="用户登录" data-options="modal:true,iconCls:'icon-doc',closed: true,closable: false" style="width:300px;height:200px;padding:10px">
+        <table width="100%">
+            <tr>
+                <td>用户名:</td>
+                <td><input width="300" class="easyui-textbox" type="text" id="uid" data-options="required:true" /></td>
+            </tr>
+            <tr>
+                <td>密码:</td>
+                <td><input width="300" class="easyui-textbox" type="password" id="psw" data-options="required:true" /></td>
+            </tr>
+            <tr>
+                <td width="100%" align="right" colspan="2">
+                    <a href="javascript:void(0)" class="easyui-linkbutton" onclick="Login()">用户登录</a><a id="pro1"></a>
+                </td>
+            </tr>
+        </table>
+
+    </div>
 </body>
 </html>

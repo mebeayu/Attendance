@@ -9,6 +9,13 @@ using Oracle.ManagedDataAccess.Client;
 
 namespace Common
 {
+    public class DBAtt : DBSQL
+    {
+        public DBAtt()
+        {
+            this.ConnectSQLServerDB("192.168.27.190", "Att", "admin", "CTzy60023925");//
+        }
+    }
     public class DBHR : DBSQL
     {
         public DBHR()
@@ -30,7 +37,7 @@ namespace Common
         public DB()
         {
             //this.ConnectSQLServerDB("127.0.0.1", "Contract", "sa", "01161036");
-            this.ConnectSQLServerDB("192.168.27.190", "Contract", "admin", "CTzy60023925");
+            this.ConnectSQLServerDB("192.168.27.190", "Att", "admin", "CTzy60023925");
         }
     }
     public class DBSQL

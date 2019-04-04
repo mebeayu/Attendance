@@ -21,19 +21,37 @@ namespace Attendance.Common
         {
             dboa.Close();
         }
-        public List<LeaveQuest> QueryLeave(LeaveQuest obj)
+        public string GetOAUIDByLoginID(string LoginID)
+        {
+            DataSet ds = dboa.ExeQuery($@"select ID from HRMRESOURCE where LOGINID='{LoginID}'");
+            if (ds.Tables[0].Rows.Count > 0) return ds.Tables[0].Rows[0][0].ToString();
+            else return null;
+        }
+        public List<LeaveQuest> QueryLeave(LeaveQuest obj,TokenObj tokenObj=null)
         {
             if (obj.LASTNAME == null)
             {
                 obj.LASTNAME = "";
             }
-            
-            DataSet ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+            DataSet ds = null;
+            if (tokenObj==null||tokenObj.type != "0")
+            {
+                ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
                 (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
                 b.LASTNAME like :LASTNAME and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
                 new OracleParameter("LASTNAME", "%" + obj.LASTNAME + "%"));
+            }
+            else
+            {
+                ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+                (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
+                left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
+                where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
+                b.LOGINID =:LOGINID and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
+                new OracleParameter("LOGINID",tokenObj.uid));
+            }
            
             int n = ds.Tables[0].Rows.Count;
             List<LeaveQuest> list = new List<LeaveQuest>();
@@ -73,19 +91,32 @@ namespace Attendance.Common
             }
             return list;
         }
-        public List<Trip>  QueryTrip(Trip obj)
+        public List<Trip>  QueryTrip(Trip obj,TokenObj tokenObj=null)
         {
             if (obj.LASTNAME == null)
             {
                 obj.LASTNAME = "";
             }
-            
-            DataSet ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+            DataSet ds = null;
+            if(tokenObj==null|| tokenObj.type != "0")
+            {
+                ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
                 b.LASTNAME like :LASTNAME and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
-                new OracleParameter("LASTNAME", "%" + obj.LASTNAME + "%"));
+               new OracleParameter("LASTNAME", "%" + obj.LASTNAME + "%"));
+            }
+            else
+            {
+                ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
+                left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
+                where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
+                b.LOGINID =:LOGINID and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
+               new OracleParameter("LOGINID", tokenObj.uid));
+                
+            }
 
             int n = ds.Tables[0].Rows.Count;
             List<Trip> list = new List<Trip>();

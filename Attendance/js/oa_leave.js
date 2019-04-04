@@ -1,7 +1,11 @@
 ﻿$(document).ready(function () {
     Token = localStorage.getItem("Token");
     uid = localStorage.getItem("uid");
-
+    user_inf = JSON.parse(localStorage.getItem("user_info"));
+    console.log(user_inf);
+    if (user_inf.type === "0") {
+        $("#LASTNAME").hide();
+    }
     var today = new Date();
     var m = today.getMonth() + 1;
         $("#start_time").textbox('setValue', today.getFullYear() + "-" + (m < 10 ? ('0' + m) : m) + "-01");
@@ -17,7 +21,7 @@ function LoadDays() {
     var list = [];
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
     $('#dg').datagrid('loadData', list);
-    var request_data = { LASTNAME: LASTNAME, StartDate: s, EndDate: e };
+    var request_data = { Token: Token, LASTNAME: LASTNAME, StartDate: s, EndDate: e };
     console.log(request_data);
     var url = "/API/APIAtt/QueryLeave";
     $.ajax({

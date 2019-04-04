@@ -7,6 +7,7 @@ namespace Attendance.Models
 {
     public class Person
     {
+        public string Token{get;set;}
         public string UID { get; set; }
         public string MOBILE { get; set; }
         public string LASTNAME { get; set; }
