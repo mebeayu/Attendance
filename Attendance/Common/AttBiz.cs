@@ -347,7 +347,7 @@ namespace Attendance.Common
         {
             DBAtt db = new DBAtt();
             DataSet ds = db.ExeQuery($@"select * from Detail where LOGINID='{LOGINID}' and Month='{Month}'");
-            if (ds == null) return null;
+            if (ds == null||ds.Tables[0].Rows.Count==0) return null;
             Person p = new Person();
             p.UID = ds.Tables[0].Rows[0]["oa_uid"].ToString();
             p.LOGINID = ds.Tables[0].Rows[0]["LOGINID"].ToString();
