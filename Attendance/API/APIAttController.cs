@@ -279,6 +279,24 @@ namespace Attendance.API
             }
             return null;
         }
+        [HttpPost]
+        [ActionName("GetPersonAtt")]
+        public DataResult GetPersonAtt([FromBody]Person obj)
+        {
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
+            Person p = AttBiz.GetPersonAtt(tokenObj.uid, obj.Month);
+            if (p==null)
+            {
+                return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
+            }
+            DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            data.data = p;
+            return data;
+        }
         public string TranLeaveType(int type)
         {
             if (type < 0)

@@ -343,6 +343,34 @@ namespace Attendance.Common
             db.Close();
             return list;
         }
+        public static Person GetPersonAtt(string LOGINID,string Month)
+        {
+            DBAtt db = new DBAtt();
+            DataSet ds = db.ExeQuery($@"select * from Detail where LOGINID='{LOGINID}' and Month='{Month}'");
+            if (ds == null) return null;
+            Person p = new Person();
+            p.UID = ds.Tables[0].Rows[0]["oa_uid"].ToString();
+            p.LOGINID = ds.Tables[0].Rows[0]["LOGINID"].ToString();
+            p.MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
+            p.LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
+            p.Department = ds.Tables[0].Rows[0]["Department"].ToString();
+            p.WorkDay = int.Parse(ds.Tables[0].Rows[0]["WorkDay"].ToString());
+            p.AttDay = int.Parse(ds.Tables[0].Rows[0]["AttDay"].ToString());
+            p.LateCount = int.Parse(ds.Tables[0].Rows[0]["LateCount"].ToString());
+            p.EarlyCount = int.Parse(ds.Tables[0].Rows[0]["EarlyCount"].ToString());
+            p.Trip = int.Parse(ds.Tables[0].Rows[0]["Trip"].ToString());
+            p.Leave0 = double.Parse(ds.Tables[0].Rows[0]["Leave0"].ToString());
+            p.Leave1 = double.Parse(ds.Tables[0].Rows[0]["Leave1"].ToString());
+            p.Leave2 = double.Parse(ds.Tables[0].Rows[0]["Leave2"].ToString());
+            p.Leave3 = double.Parse(ds.Tables[0].Rows[0]["Leave3"].ToString());
+            p.Leave4 = double.Parse(ds.Tables[0].Rows[0]["Leave4"].ToString());
+            p.Leave5 = double.Parse(ds.Tables[0].Rows[0]["Leave5"].ToString());
+            p.Leave6 = double.Parse(ds.Tables[0].Rows[0]["Leave6"].ToString());
+            p.Leave7 = double.Parse(ds.Tables[0].Rows[0]["Leave7"].ToString());
+            p.ListDetail = JsonConvert.DeserializeObject<List<DayDetail>>(ds.Tables[0].Rows[0]["Detail"].ToString());
+            db.Close();
+            return p;
+        }
         private Person FindPerson(string UID, List<Person> list_oa)
         {
             for (int i = 0; i < list_oa.Count; i++)

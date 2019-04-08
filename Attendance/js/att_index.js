@@ -32,6 +32,9 @@ function stc_leave_cc() {
 function stc_att_old() {
     $("#iframe_maincontent").attr("src", "/Att/StcAttrOld");
 }
+function show_detail() {
+    $("#iframe_maincontent").attr("src", "/Att/ShowDetail");
+}
 function Login() {
     var uid = $("#uid").val();
     var psw = $("#psw").val();

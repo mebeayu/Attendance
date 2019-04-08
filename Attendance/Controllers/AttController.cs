@@ -29,5 +29,9 @@ namespace Attendance.Controllers
         {
             return View();
         }
+        public ActionResult ShowDetail()
+        {
+            return View();
+        }
     }
 }

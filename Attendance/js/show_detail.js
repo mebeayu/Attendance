@@ -3,40 +3,29 @@
     uid = localStorage.getItem("uid");
     //yearmonth("#attYearMonth");
 });
-function Stc_Att() {
-
-    var formData = new FormData();
+function GetPersonAtt() {
     var month = $("#attYearMonth").val();
     if (month === "") {
         alert("请选择月份");
         return;
     }
-    arr = month.split("-");
-    var days = mGetDate(arr[0], arr[1]);
-    console.log(days);
-    formData.append("start_time", month+"-01");
-    formData.append("end_time", month + "-" + days);
-    if ($("#kq_file")[0].files.length > 0) {
-        formData.append("kq_file", $("#kq_file")[0].files[0]);
-    }
-    else {
-        alert("请选择上传文件");
-        return;
-    }
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
+    var request_data = { Token: Token, Month: month };
+    console.log(request_data);
+    var url = "/API/APIAtt/GetPersonAtt";
     $.ajax({
-        method: "POST",
-        url: "/API/APIAtt/StcAttOld",
-        data: formData,
-        dataType: "json",
-        contentType: false, //传文件必须！
-        processData: false, //传文件必须！
+        type: 'POST',
+        url: url,
+        data: request_data,
         success: function (data) {
             if (data.error_code === 0) {
 
-                //console.log(list);
+                console.log(data.data);
+                var list = [];
+                list.push(data.data);
+                $('#dg').datagrid('loadData', list);
+                $('#dg1').datagrid('loadData', data.data.ListDetail);
                 $("#pro").html("");
-                $('#dg').datagrid('loadData', data.data);
             }
             else {
                 alert(data.error_code + data.message);
@@ -47,9 +36,9 @@ function Stc_Att() {
         error: function () {
             alert("服务器错误");
             $("#pro").html("");
-        }
+        },
+        dataType: "json"
     });
-
 }
 function formatNum(val, row) {
     if (val === 0) return "";
@@ -110,14 +99,4 @@ function yearmonth(id) {
         yearIpt = p.find('input.calendar-menu-year'),//年份输入框
         span = p.find('span.calendar-text'); //显示月份层的触发控件
     console.log(yearIpt)
-}
-function getUrl(file) {
-    //var tmpFile = file[0];
-    //var reader = new FileReader();
-    //reader.readAsDataURL(tmpFile);
-    //reader.onload = function (e) {
-    //    var url = e.target.result;
-    //    console.log(url);
-    //}
-
 }
