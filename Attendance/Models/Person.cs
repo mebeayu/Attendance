@@ -9,6 +9,7 @@ namespace Attendance.Models
     {
         public string Token{get;set;}
         public string UID { get; set; }
+        public string LOGINID { get; set; }
         public string MOBILE { get; set; }
         public string LASTNAME { get; set; }
         public string Department { get; set; }
@@ -27,10 +28,19 @@ namespace Attendance.Models
         public double Leave6 { get; set; }
         public double Leave7 { get; set; }
 
+        public List<DayDetail> ListDetail { get; set; }
+
         public string StartDate { get; set; }
         public string EndDate { get; set; }
 
         public string Base64 { get; set; }
         public string fileName { get; set; }
+    }
+
+    public class DayDetail
+    {
+        public string morning { get; set; }
+        public string afternoon { get; set; }
+        public int tag { get; set; }
     }
 }

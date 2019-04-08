@@ -40,13 +40,38 @@ namespace Attendance.Common
         }
         public string GetCellValue(string col, int row)
         {
-            dynamic value = _wsh.Range[col + row.ToString()].Value;
-            if (value == null) return "";
-            return value.ToString();
+            try
+            {
+                dynamic value = _wsh.Range[col + row.ToString()].Value;
+                if (value == null) return "";
+                return value.ToString();
+            }
+            catch (Exception)
+            {
+                CloseExcel();
+                return "";
+            }
+           
         }
         public void SetCellValue(string col, int row, string value)
         {
             _wsh.Range[col + row.ToString()].Value = value;
+        }
+        public string GetCellValue(int row, int col)
+        {
+            try
+            {
+                dynamic value = _wsh.Cells[row, col].Value;
+                if (value == null) return "";
+                return value.ToString();
+            }
+            catch (Exception)
+            {
+
+                CloseExcel();
+                return "";
+            }
+            
         }
 
 

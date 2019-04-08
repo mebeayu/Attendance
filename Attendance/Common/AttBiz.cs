@@ -1,5 +1,6 @@
 ﻿using Attendance.Models;
 using Common;
+using Newtonsoft.Json;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -197,7 +198,7 @@ namespace Attendance.Common
         }
         public Person QueryPersonAtt(string  uid,string start_date,string end_date, List<Trip> list_trip)
         {
-            DataSet ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME from HRMRESOURCE a 
+            DataSet ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a 
             left join HRMDEPARTMENT b on a.DEPARTMENTID=b.ID where a.id={uid}");
             if (ds.Tables[0].Rows.Count==0)
             {
@@ -208,6 +209,7 @@ namespace Attendance.Common
             p.LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
             p.MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
             p.Department = ds.Tables[0].Rows[0]["DEPARTMENTNAME"].ToString();
+            p.LOGINID = ds.Tables[0].Rows[0]["LOGINID"].ToString();
             ds = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
             where xjsq5={uid} and b.NOWNODETYPE=3 and 
             ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
@@ -264,6 +266,7 @@ namespace Attendance.Common
             int index = 4;
             while (true)
             {
+                //string t = excel.GetCellValue(4, 16);
                 Person p = new Person();
                 p.LASTNAME = excel.GetCellValue("A", index);
                 if (p.LASTNAME == "" || p.LASTNAME == null) break;
@@ -271,7 +274,16 @@ namespace Attendance.Common
                 p.AttDay = int.Parse(excel.GetCellValue("E", index));
                 p.LateCount = int.Parse(excel.GetCellValue("F", index));
                 p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
-
+                List<DayDetail> list_daydetail = new List<DayDetail>();
+                for (int i = 16; i <= 46; i++)
+                {
+                    DayDetail daydetail = new DayDetail();
+                    daydetail.morning = excel.GetCellValue(index, i);
+                    daydetail.afternoon = excel.GetCellValue(index+1, i);
+                    daydetail.tag = 0;
+                    list_daydetail.Add(daydetail);
+                }
+                p.ListDetail = list_daydetail;
                 DataSet ds = dboa.ExeQuery($@"select ID from HRMRESOURCE where LASTNAME='{p.LASTNAME}' and SUBCOMPANYID1=68");
                 if (ds.Tables[0].Rows.Count == 0) p.UID = "";
                 else p.UID = ds.Tables[0].Rows[0][0].ToString();
@@ -298,6 +310,9 @@ namespace Attendance.Common
             t.LASTNAME = "";
             List<Trip> list_trip = QueryTrip(t);
             List<Person> list_oa = QueryAttList(arrUIDs, start_date, end_date, list_trip);
+            DBAtt db = new DBAtt();
+            string month = start_date.Substring(0, 7);
+            int res = db.ExeCMD($@"delete from Detail where Month='{month}'");
             for (int i = 0; i < list.Count; i++)
             {
                 Person p = FindPerson(list[i].UID, list_oa);
@@ -314,8 +329,18 @@ namespace Attendance.Common
                     list[i].Leave5 = p.Leave5;
                     list[i].Leave6 = p.Leave6;
                     list[i].Leave7 = p.Leave7;
+                    list[i].LOGINID = p.LOGINID;
+                    
                 }
+                res = db.ExeCMD($@"insert into Detail(oa_uid,LOGINID,MOBILE,LASTNAME,Department,
+                                WorkDay,AttDay,LateCount,EarlyCount,Trip,
+                                Leave0,Leave1,Leave2,Leave3,Leave4,Leave5,Leave6,Leave7,Detail,Month) values
+                                ('{list[i].UID}','{list[i].LOGINID}','{list[i].MOBILE}','{list[i].LASTNAME}','{list[i].Department}',
+                                 {list[i].WorkDay},{list[i].AttDay},{list[i].LateCount},{list[i].EarlyCount},{list[i].Trip},
+                                 {list[i].Leave0},{list[i].Leave1},{list[i].Leave2},{list[i].Leave3},{list[i].Leave4},{list[i].Leave5},{list[i].Leave6},{list[i].Leave7},
+                                 '{JsonConvert.SerializeObject(list[i].ListDetail)}','{month}')");
             }
+            db.Close();
             return list;
         }
         private Person FindPerson(string UID, List<Person> list_oa)
