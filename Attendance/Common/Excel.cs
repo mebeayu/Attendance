@@ -32,11 +32,15 @@ namespace Attendance.Common
         }
         public void CloseExcel()
         {
-            app.Quit();
+            if (app != null)
+            {
+                app.Quit();
 
-            //释放掉多余的excel进程
-            System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
-            app = null;
+                //释放掉多余的excel进程
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
+                app = null;
+            }
+            
         }
         public string GetCellValue(string col, int row)
         {
@@ -46,7 +50,7 @@ namespace Attendance.Common
                 if (value == null) return "";
                 return value.ToString();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 CloseExcel();
                 return "";

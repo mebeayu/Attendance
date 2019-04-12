@@ -98,6 +98,8 @@ namespace Attendance.Common
             {
                 obj.LASTNAME = "";
             }
+            Dictionary<string, int> cacheDic = new Dictionary<string, int>();
+
             DataSet ds = null;
             if(tokenObj==null|| tokenObj.type != "0")
             {
@@ -123,6 +125,8 @@ namespace Attendance.Common
             List<Trip> list = new List<Trip>();
             for (int i = 0; i < n; i++)
             {
+                string key = ds.Tables[0].Rows[i]["JBR"].ToString() + ds.Tables[0].Rows[i]["CC4"].ToString() + ds.Tables[0].Rows[i]["CC5"].ToString();
+                
                 Trip trip = new Trip();
                 trip.UID = ds.Tables[0].Rows[i]["JBR"].ToString();
                 trip.MOBILE = ds.Tables[0].Rows[i]["MOBILE"].ToString();
@@ -142,7 +146,11 @@ namespace Attendance.Common
                 if (e > end) e = end;
                 TimeSpan timeSpan = e - s;
                 trip.Days = timeSpan.Days + 1;
-                list.Add(trip);
+                if (cacheDic.Keys.Contains(key) == false)
+                {
+                    list.Add(trip);
+                    cacheDic.Add(key, 0);
+                }
                 string strIDS = ds.Tables[0].Rows[i]["CC8"].ToString();
                 string[] arrIDs = strIDS.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 for (int j = 0; j < arrIDs.Length; j++)
@@ -160,7 +168,13 @@ namespace Attendance.Common
                     trip1.StartDate = trip.StartDate;
                     trip1.EndDate = trip.EndDate;
                     trip1.Days = trip.Days;
-                    list.Add(trip1);
+                    key = trip1.UID + trip1.StartDate + trip1.EndDate;
+                    if (cacheDic.Keys.Contains(key) == false)
+                    {
+                        list.Add(trip1);
+                        cacheDic.Add(key, 0);
+                    }
+                    
                 }
 
             }
@@ -270,12 +284,19 @@ namespace Attendance.Common
                 Person p = new Person();
                 p.LASTNAME = excel.GetCellValue("A", index);
                 if (p.LASTNAME == "" || p.LASTNAME == null) break;
-                p.WorkDay = int.Parse(excel.GetCellValue("D", index));
-                p.AttDay = int.Parse(excel.GetCellValue("E", index));
-                p.LateCount = int.Parse(excel.GetCellValue("F", index));
-                p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
+                try
+                {
+                    p.WorkDay = int.Parse(excel.GetCellValue("D", index));
+                    p.AttDay = int.Parse(excel.GetCellValue("E", index));
+                    p.LateCount = int.Parse(excel.GetCellValue("F", index));
+                    p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
+                }
+               catch(Exception)
+                {
+                    //excel.CloseExcel();
+                }  
                 List<DayDetail> list_daydetail = new List<DayDetail>();
-                for (int i = 16; i <= 46; i++)
+                for (int i = 6; i <= 36; i++)
                 {
                     DayDetail daydetail = new DayDetail();
                     daydetail.morning = excel.GetCellValue(index, i);
