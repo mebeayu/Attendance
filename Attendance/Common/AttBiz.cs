@@ -287,20 +287,30 @@ namespace Attendance.Common
                 try
                 {
                     p.WorkDay = int.Parse(excel.GetCellValue("D", index));
-                    p.AttDay = int.Parse(excel.GetCellValue("E", index));
-                    p.LateCount = int.Parse(excel.GetCellValue("F", index));
-                    p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
+                    //p.AttDay = int.Parse(excel.GetCellValue("E", index));
+                    //p.LateCount = int.Parse(excel.GetCellValue("F", index));
+                    //p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
                 }
                catch(Exception)
                 {
                     //excel.CloseExcel();
-                }  
+                }
+                double att = 0;
                 List<DayDetail> list_daydetail = new List<DayDetail>();
                 for (int i = 6; i <= 36; i++)
                 {
+                    att = 0;
                     DayDetail daydetail = new DayDetail();
                     daydetail.morning = excel.GetCellValue(index, i);
                     daydetail.afternoon = excel.GetCellValue(index+1, i);
+                    if(daydetail.morning != "休")
+                    {
+                        if (daydetail.morning != "漏" && daydetail.morning != "") att += 0.5;
+                        if (daydetail.afternoon != "漏" && daydetail.afternoon != "" && daydetail.afternoon != null) att += 0.5;
+                        if (att >0) p.AttDay += att;
+                    }
+                    
+                   
                     daydetail.tag = 0;
                     list_daydetail.Add(daydetail);
                 }
