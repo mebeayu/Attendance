@@ -13,9 +13,10 @@ namespace Attendance.Common
     public class AttBiz
     {
         DBOA dboa;
-        
+        //private static Dictionary<string, List<Trip>> cacheTripList;
         public AttBiz()
         {
+            //cacheTripList = new Dictionary<string, List<Trip>>();
             dboa = new DBOA();
         }
         public void Close()
@@ -178,7 +179,16 @@ namespace Attendance.Common
                 }
 
             }
-            
+            //string cacheTripKey = "";
+            //if (tokenObj != null)
+            //{
+            //    cacheTripKey = obj.StartDate + obj.EndDate + tokenObj.type;
+            //}
+            //else
+            //{
+            //    cacheTripKey = obj.StartDate + obj.EndDate;
+            //}
+            //cacheTripList[cacheTripKey] = list;
             return list;
         }
         public List<string> GetUIDinDate(string start_date, string end_date, List<Trip> list_trip)

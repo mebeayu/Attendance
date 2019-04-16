@@ -25,11 +25,11 @@
                data-options="singleSelect:true,collapsible:false,toolbar:'#tb1'" rownumbers="false" pagination="false">
             <thead>
                 <tr>
-                    <th data-options="field:'LASTNAME',resizable:true" width="80px">姓名</th>
+                    <th data-options="field:'LASTNAME',resizable:true,formatter:NameFormatter" width="80px">姓名</th>
                     <th data-options="field:'MOBILE',resizable:true" width="120px">手机</th>
                     <th data-options="field:'Department',resizable:true" width="120px">部门</th>
                     @*<th data-options="field:'LateCount',resizable:true,formatter:formatNum" width="60px">迟到</th>
-                    <th data-options="field:'EarlyCount',resizable:true,formatter:formatNum" width="60px">早退</th>*@
+                        <th data-options="field:'EarlyCount',resizable:true,formatter:formatNum" width="60px">早退</th>*@
                     <th data-options="field:'Trip',resizable:true,formatter:formatNum" width="60px">出差</th>
                     <th data-options="field:'Leave0',resizable:true,formatter:formatNum" width="60px">事假</th>
                     <th data-options="field:'Leave1',resizable:true,formatter:formatNum" width="60px">病假</th>
@@ -49,6 +49,42 @@
         -
         <input id="end_time" class="easyui-datebox" data-options="formatter:myformatter,parser:myparser">
         <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:200px" onclick="Stc_Att()">计算考勤报表</a>
+    </div>
+    @*个人明细对话框*@
+    <div id="dlg_show_person" class="easyui-dialog" title="个人明细" data-options="modal:true,iconCls:'icon-doc',closed: true" style="width:660px;height:600px;padding:10px">
+        
+            <a id="pro1"></a>
+       
+        <table width="100%" height="100%">
+            <tr>
+                <td width="50%">
+                    <table id="dg_trip" class="easyui-datagrid" style="width:100%;height:100%;text-align:center"
+                           data-options="singleSelect:true,collapsible:false" rownumbers="false" pagination="false">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'LASTNAME',resizable:true" width="50px">姓名</th>
+                                <th data-options="field:'Title',resizable:true" width="90px">出差事由</th>
+                                <th data-options="field:'StartDate',resizable:true" width="75px">开始日期</th>
+                                <th data-options="field:'EndDate',resizable:true" width="75px">结束日期</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </td>
+                <td width="50%">
+                    <table id="dg_leave" class="easyui-datagrid" style="width:100%;height:100%;text-align:center"
+                           data-options="singleSelect:true,collapsible:false" rownumbers="false" pagination="false">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'LASTNAME',resizable:true" width="50px">姓名</th>
+                                <th data-options="field:'xjsq9',resizable:true" width="60px">休假类型</th>
+                                <th data-options="field:'xjsq10',resizable:true" width="75px">开始日期</th>
+                                <th data-options="field:'xjsq17',resizable:true" width="75px">结束日期</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>

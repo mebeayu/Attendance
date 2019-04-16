@@ -178,6 +178,7 @@
     <Compile Include="Models\LeaveQuest.cs" />
     <Compile Include="Models\LoginRequest.cs" />
     <Compile Include="Models\Person.cs" />
+    <Compile Include="Models\PersonTripandLeaveDetail.cs" />
     <Compile Include="Models\TokenObj.cs" />
     <Compile Include="Models\Trip.cs" />
     <Compile Include="Models\UserInfo.cs" />

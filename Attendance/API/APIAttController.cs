@@ -297,6 +297,50 @@ namespace Attendance.API
             data.data = p;
             return data;
         }
+        /// <summary>
+        /// Token,UID,LASTNAME,StartDate,EndDate
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [ActionName("GetPersonTripandLeaveDetail")]
+        public DataResult GetPersonTripandLeaveDetail([FromBody]Person obj)
+        {
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
+            AttBiz attbiz = new AttBiz();
+            Trip t = new Trip();
+            t.StartDate = obj.StartDate;
+            t.EndDate = obj.EndDate;
+            t.UID = obj.UID;
+            t.LASTNAME = "";
+            List<Trip> list_trip = attbiz.QueryTrip(t);
+            LeaveQuest leaveObj = new LeaveQuest();
+            leaveObj.LASTNAME = obj.LASTNAME;
+            leaveObj.StartDate = obj.StartDate;
+            leaveObj.EndDate = obj.EndDate;
+            List<LeaveQuest> list_leave = attbiz.QueryLeave(leaveObj);
+            List<Trip> list_trip_one = new List<Trip>();
+            attbiz.Close();
+            for (int i = 0; i < list_trip.Count; i++)
+            {
+                if (list_trip[i].UID == obj.UID) list_trip_one.Add(list_trip[i]);
+            }
+            PersonTripandLeaveDetail d = new PersonTripandLeaveDetail();
+            for (int i = 0; i < list_leave.Count; i++)
+            {
+                list_leave[i].xjsq9 = TranLeaveType(int.Parse(list_leave[i].xjsq9));
+            }
+            d.list_leave = list_leave;
+            d.list_trip = list_trip_one;
+            DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            data.data = d;
+            return data;
+
+        }
         public string TranLeaveType(int type)
         {
             if (type < 0)
