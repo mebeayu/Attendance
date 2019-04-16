@@ -63,10 +63,25 @@ namespace Attendance.Common
         {
             Dispose();
         }
-
-        public void SetCellValue(string col, int row, string value)
+        public int GetColcount()
         {
-            
+            IRow firstRow = sheet.GetRow(0);
+            if (firstRow==null)
+            {
+                return 0;
+            }
+            int cellCount = firstRow.LastCellNum; //一行最后一个cell的编号 即总的列数
+            return cellCount;
+        }
+        public int GetRowCount()
+        {
+            int rowCount = sheet.LastRowNum;
+            return rowCount;
+        }
+        public void SetCellValue( int row,int col, string value)
+        {
+            IRow Row = sheet.GetRow(row - 1);
+            Row.Cells[col - 1].SetCellValue(value);
         }
         public string GetCellValue(int row, int col)
         {
