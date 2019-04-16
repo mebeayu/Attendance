@@ -3,77 +3,84 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Office.Interop.Excel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.HSSF.UserModel;
 using System.IO;
 using System.Reflection;
 using Attendance.Models;
 
 namespace Attendance.Common
 {
-    public class Excel
+    public class Excel : IDisposable
     {
-        private _Workbook _wbk;
-        private _Worksheet _wsh;
-        Application app;
-        Workbooks wbks;
-        Sheets shs;
+        private string fileName = null; //文件名
+        private IWorkbook workbook = null;
+        private FileStream fs = null;
+        private bool disposed;
+        private ISheet sheet = null;
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    if (fs != null)
+                        fs.Close();
+                }
+
+                fs = null;
+                disposed = true;
+            }
+        }
         public void OpenExcel(string path, int indexSheet = 1)
         {
-            app = new Application();
-            wbks = app.Workbooks;
-            _wbk = wbks.Open(path);
+            try
+            {
+                fileName = path;
+                fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                if (fileName.IndexOf(".xlsx") > 0) // 2007版本
+                    workbook = new XSSFWorkbook(fs);
+                else if (fileName.IndexOf(".xls") > 0) // 2003版本
+                    workbook = new HSSFWorkbook(fs);
+                int index = indexSheet - 1;
+                sheet = workbook.GetSheetAt(index);
+            }
+            catch (Exception ex)
+            {
 
-            shs = _wbk.Sheets;
-
-            _wsh = (_Worksheet)shs.get_Item(indexSheet);
-            _wsh.Visible = XlSheetVisibility.xlSheetVisible;
-            //string t = GetCellValue("A",4);
+                
+            }
+            
 
         }
         public void CloseExcel()
         {
-            if (app != null)
-            {
-                app.Quit();
+            Dispose();
+        }
 
-                //释放掉多余的excel进程
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(app);
-                app = null;
-            }
-            
-        }
-        public string GetCellValue(string col, int row)
-        {
-            try
-            {
-                dynamic value = _wsh.Range[col + row.ToString()].Value;
-                if (value == null) return "";
-                return value.ToString();
-            }
-            catch (Exception ex)
-            {
-                CloseExcel();
-                return "";
-            }
-           
-        }
         public void SetCellValue(string col, int row, string value)
         {
-            _wsh.Range[col + row.ToString()].Value = value;
+            
         }
         public string GetCellValue(int row, int col)
         {
             try
             {
-                dynamic value = _wsh.Cells[row, col].Value;
-                if (value == null) return "";
-                return value.ToString();
+                IRow Row = sheet.GetRow(row - 1);
+                ICell cell = Row.GetCell(col - 1);
+                string cellValue = cell.StringCellValue;
+                return cellValue;
             }
             catch (Exception)
             {
 
-                CloseExcel();
-                return "";
+                return null;
             }
             
         }

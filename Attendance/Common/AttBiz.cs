@@ -282,11 +282,11 @@ namespace Attendance.Common
             {
                 //string t = excel.GetCellValue(4, 16);
                 Person p = new Person();
-                p.LASTNAME = excel.GetCellValue("A", index);
+                p.LASTNAME = excel.GetCellValue(index, 1);
                 if (p.LASTNAME == "" || p.LASTNAME == null) break;
                 try
                 {
-                    p.WorkDay = int.Parse(excel.GetCellValue("D", index));
+                    p.WorkDay = int.Parse(excel.GetCellValue(index, 4));
                     //p.AttDay = int.Parse(excel.GetCellValue("E", index));
                     //p.LateCount = int.Parse(excel.GetCellValue("F", index));
                     //p.EarlyCount = int.Parse(excel.GetCellValue("H", index));
