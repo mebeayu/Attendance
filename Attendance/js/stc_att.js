@@ -14,7 +14,8 @@ $(document).ready(function () {
             var s = $("#start_time").val();
             var e = $("#end_time").val();
             $('#dlg_show_person').dialog('open');
-            
+            $('#dg_leave').datagrid('loadData', []);
+            $('#dg_trip').datagrid('loadData', []);
             $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
             
             var request_data = { Token: Token, UID: row.UID, LASTNAME: row.LASTNAME, StartDate: s, EndDate: e };
@@ -26,8 +27,7 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.error_code === 0) {
                         console.log(data.data);
-                        //$('#dg_leave').datagrid('loadData', []);
-                        //$('#dg_trip').datagrid('loadData', []);
+                       
 
                         $('#dg_leave').datagrid('loadData', data.data.list_leave);
                         $('#dg_trip').datagrid('loadData', data.data.list_trip);

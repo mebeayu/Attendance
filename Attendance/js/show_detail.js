@@ -10,7 +10,7 @@ function GetPersonAtt() {
         return;
     }
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
-    var request_data = { Token: Token, Month: month };
+    var request_data = { Token: Token, LOGINID: uid, Month: month };
     console.log(request_data);
     var url = "/API/APIAtt/GetPersonAtt";
     $.ajax({

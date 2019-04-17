@@ -240,7 +240,7 @@ namespace Attendance.API
             t.UID = obj.UID;
             t.LASTNAME = "";
             List<Trip> list = attbiz.QueryTrip(t);
-            Person p = attbiz.QueryPersonAtt(obj.UID, obj.StartDate, obj.EndDate, list);
+            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list);
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = p;
@@ -288,7 +288,7 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            Person p = AttBiz.GetPersonAtt(tokenObj.uid, obj.Month);
+            Person p = AttBiz.GetPersonAtt(obj.LOGINID, obj.Month);
             if (p==null)
             {
                 return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);

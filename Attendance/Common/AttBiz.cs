@@ -278,7 +278,7 @@ namespace Attendance.Common
             {
                 if(p.UID== list_trip[i].UID) p.Trip += list_trip[i].Days;
             }
-
+            p.SumAtt =p.AttDay+ p.Trip + p.Leave0 + p.Leave1 + p.Leave2+p.Leave3+p.Leave4+p.Leave5+p.Leave6+p.Leave7;
             return p;
         }
         public List<Person> GetPersonBaseFromExcel(string path)
@@ -371,6 +371,7 @@ namespace Attendance.Common
                     list[i].Leave6 = p.Leave6;
                     list[i].Leave7 = p.Leave7;
                     list[i].LOGINID = p.LOGINID;
+                    list[i].SumAtt = p.SumAtt+list[i].AttDay;
                     
                 }
                 res = db.ExeCMD($@"insert into Detail(oa_uid,LOGINID,MOBILE,LASTNAME,Department,

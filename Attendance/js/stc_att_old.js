@@ -1,7 +1,50 @@
-﻿$(document).ready(function () {
+﻿var dg;
+$(document).ready(function () {
     Token = localStorage.getItem("Token");
     uid = localStorage.getItem("uid");
     //yearmonth("#attYearMonth");
+    dg = $('#dg');
+    dg.datagrid({
+        onDblClickRow: function (index, row) {
+            var month = $("#attYearMonth").val();
+            if (month === "") {
+                alert("请选择月份");
+                return;
+            }
+            $('#dlg_show_person').dialog('open');
+
+            $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
+
+            var request_data = { Token: Token, LOGINID: row.LOGINID, Month: month };
+            var url = "/API/APIAtt/GetPersonAtt";
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: request_data,
+                success: function (data) {
+                    if (data.error_code === 0) {
+                        console.log(data.data);
+                        $('#dg_daily').datagrid('loadData', []);
+                        
+
+                        $('#dg_daily').datagrid('loadData', data.data.ListDetail);
+
+                        $("#pro1").html("");
+                    }
+                    else {
+                        alert(data.error_code + data.message);
+                        $("#pro1").html("");
+
+                    }
+                },
+                error: function () {
+                    alert("服务器错误");
+                    $("#pro1").html("");
+                },
+                dataType: "json"
+            });
+        }
+    });
 });
 function Stc_Att() {
 
@@ -50,6 +93,17 @@ function Stc_Att() {
         }
     });
 
+}
+function formatSumAtt(val, row) {
+    if (val < row.WorkDay) {
+        return "<font color=red>" + val + "</font>";
+    }
+    else if (val === row.WorkDay) {
+        return "<font color=green>" + val + "</font>";
+    }
+    else {
+        return val;
+    }
 }
 function formatNum(val, row) {
     if (val === 0) return "";
