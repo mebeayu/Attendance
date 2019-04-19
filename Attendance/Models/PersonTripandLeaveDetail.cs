@@ -9,5 +9,6 @@ namespace Attendance.Models
     {
         public List<LeaveQuest> list_leave { get; set; }
         public List<Trip> list_trip { get; set; }
+        public Person person { get; set; }
     }
 }

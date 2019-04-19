@@ -11,12 +11,16 @@ $(document).ready(function () {
                 alert("请选择月份");
                 return;
             }
+            $('#dg_daily').datagrid('loadData', []);
             $('#dlg_show_person').dialog('open');
 
             $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
-
-            var request_data = { Token: Token, LOGINID: row.LOGINID, Month: month };
-            var url = "/API/APIAtt/GetPersonAtt";
+            arr = month.split("-");
+            var days = mGetDate(arr[0], arr[1]);
+            var s = month + "-01";
+            var e = month + "-" + days;
+            var request_data = { Token: Token, UID: row.UID, LOGINID: row.LOGINID, LASTNAME: row.LASTNAME, StartDate: s, EndDate: e };
+            var url = "/API/APIAtt/GetPersonTripandLeaveDetail";
             $.ajax({
                 type: 'POST',
                 url: url,
@@ -24,11 +28,11 @@ $(document).ready(function () {
                 success: function (data) {
                     if (data.error_code === 0) {
                         console.log(data.data);
-                        $('#dg_daily').datagrid('loadData', []);
                         
 
-                        $('#dg_daily').datagrid('loadData', data.data.ListDetail);
-
+                        $('#dg_daily').datagrid('loadData', data.data.person.ListDetail);
+                        $('#dg_leave').datagrid('loadData', data.data.list_leave);
+                        $('#dg_trip').datagrid('loadData', data.data.list_trip);
                         $("#pro1").html("");
                     }
                     else {

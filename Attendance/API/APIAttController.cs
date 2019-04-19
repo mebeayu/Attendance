@@ -324,6 +324,7 @@ namespace Attendance.API
             leaveObj.EndDate = obj.EndDate;
             List<LeaveQuest> list_leave = attbiz.QueryLeave(leaveObj);
             List<Trip> list_trip_one = new List<Trip>();
+            Person p = AttBiz.GetPersonAtt(obj.LOGINID, obj.StartDate.Substring(0,7));
             attbiz.Close();
             for (int i = 0; i < list_trip.Count; i++)
             {
@@ -336,6 +337,7 @@ namespace Attendance.API
             }
             d.list_leave = list_leave;
             d.list_trip = list_trip_one;
+            d.person = p;
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = d;
             return data;

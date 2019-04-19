@@ -18,7 +18,7 @@ $(document).ready(function () {
             $('#dg_trip').datagrid('loadData', []);
             $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
             
-            var request_data = { Token: Token, UID: row.UID, LASTNAME: row.LASTNAME, StartDate: s, EndDate: e };
+            var request_data = { Token: Token, UID: row.UID, LOGINID:uid,LASTNAME: row.LASTNAME, StartDate: s, EndDate: e };
             var url = "/API/APIAtt/GetPersonTripandLeaveDetail";
             $.ajax({
                 type: 'POST',
