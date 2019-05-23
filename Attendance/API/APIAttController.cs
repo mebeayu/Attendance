@@ -224,6 +224,7 @@ namespace Attendance.API
                arrUID = attbiz.GetUIDinDate(obj.StartDate, obj.EndDate, list_trip);
             }
             List<Person> list = attbiz.QueryAttList(arrUID, obj.StartDate, obj.EndDate, list_trip);
+            attbiz.AddLog(tokenObj.uid, "获取出差休假报表");
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = list;

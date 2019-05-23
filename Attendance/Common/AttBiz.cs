@@ -413,6 +413,13 @@ namespace Attendance.Common
             db.Close();
             return p;
         }
+        public int AddLog(string uid,string text)
+        {
+            DBAtt db = new DBAtt();
+            int res = db.ExeCMD($@"insert into user_log(uid,log_text,date) values('{uid}','{text}','{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}')");
+            db.Close();
+            return res;
+        }
         private Person FindPerson(string UID, List<Person> list_oa)
         {
             for (int i = 0; i < list_oa.Count; i++)
