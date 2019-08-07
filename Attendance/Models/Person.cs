@@ -8,6 +8,7 @@ namespace Attendance.Models
     public class Person
     {
         public string Token{get;set;}
+        public string att_userid { get; set; }
         public string UID { get; set; }
         public string LOGINID { get; set; }
         public string MOBILE { get; set; }
@@ -15,6 +16,7 @@ namespace Attendance.Models
         public string Department { get; set; }
         public int WorkDay { get; set; }
         public double AttDay { get; set; }
+        public double NoAttDay { get; set; }//未打卡天数
         public float LateCount { get; set; }
         public float EarlyCount { get; set; }
         public int Trip { get; set; }

@@ -230,6 +230,7 @@ namespace Attendance.API
             data.data = list;
             return data;
         }
+
         [HttpPost]
         [ActionName("QueryPerson")]
         public DataResult QueryPerson([FromBody]Person obj)
@@ -247,6 +248,22 @@ namespace Attendance.API
             data.data = p;
             return data;
 
+        }
+        [HttpPost]
+        [ActionName("StcAttReport")]
+        public DataResult StcAttReport([FromBody]DateRange obj)
+        {
+            //TokenObj tokenObj = CheckToken(obj.Token, out code);
+            //if (code != MessageCode.SUCCESS)
+            //{
+            //    return DataResult.InitFromMessageCode(code);
+            //}
+            AttBiz attbiz = new AttBiz();
+            List<Person> list = attbiz.StcAttReport(obj.start_date, obj.end_date);
+            attbiz.Close();
+            DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            data.data = list;
+            return data;
         }
         [HttpPost]
         [ActionName("StcAttOld")]

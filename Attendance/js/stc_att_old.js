@@ -3,23 +3,22 @@ $(document).ready(function () {
     Token = localStorage.getItem("Token");
     uid = localStorage.getItem("uid");
     //yearmonth("#attYearMonth");
+    var today = new Date();
+    var m = today.getMonth() + 1;
+    $("#start_date").textbox('setValue', today.getFullYear() + "-" + (m < 10 ? ('0' + m) : m) + "-01");
+    $('#end_date').textbox('setValue', myformatter(today));
     dg = $('#dg');
     dg.datagrid({
         onDblClickRow: function (index, row) {
-            var month = $("#attYearMonth").val();
-            if (month === "") {
-                alert("请选择月份");
-                return;
-            }
+            var start_date = $("#start_date").val();
+            var end_date = $("#end_date").val();
             $('#dg_daily').datagrid('loadData', []);
             $('#dlg_show_person').dialog('open');
 
             $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
-            arr = month.split("-");
-            var days = mGetDate(arr[0], arr[1]);
-            var s = month + "-01";
-            var e = month + "-" + days;
-            var request_data = { Token: Token, UID: row.UID, LOGINID: row.LOGINID, LASTNAME: row.LASTNAME, StartDate: s, EndDate: e };
+
+            var request_data = { Token: Token, UID: row.UID, LOGINID: row.LOGINID, LASTNAME: row.LASTNAME, StartDate: start_date, EndDate: end_date };
+            console.log(request_data);
             var url = "/API/APIAtt/GetPersonTripandLeaveDetail";
             $.ajax({
                 type: 'POST',
@@ -29,7 +28,7 @@ $(document).ready(function () {
                     if (data.error_code === 0) {
                         console.log(data.data);
                         
-
+                        console.log(data.data);
                         $('#dg_daily').datagrid('loadData', data.data.person.ListDetail);
                         $('#dg_leave').datagrid('loadData', data.data.list_leave);
                         $('#dg_trip').datagrid('loadData', data.data.list_trip);
@@ -52,38 +51,39 @@ $(document).ready(function () {
 });
 function Stc_Att() {
 
-    var formData = new FormData();
-    var month = $("#attYearMonth").val();
-    if (month === "") {
-        alert("请选择月份");
-        return;
-    }
-    arr = month.split("-");
-    var days = mGetDate(arr[0], arr[1]);
-    console.log(days);
-    formData.append("start_time", month+"-01");
-    formData.append("end_time", month + "-" + days);
-    if ($("#kq_file")[0].files.length > 0) {
-        formData.append("kq_file", $("#kq_file")[0].files[0]);
-    }
-    else {
-        alert("请选择上传文件");
-        return;
-    }
+    //var formData = new FormData();
+    //var month = $("#attYearMonth").val();
+    //if (month === "") {
+    //    alert("请选择月份");
+    //    return;
+    //}
+    //arr = month.split("-");
+    //var days = mGetDate(arr[0], arr[1]);
+    //console.log(days);
+    //formData.append("start_time", month+"-01");
+    //formData.append("end_time", month + "-" + days);
+    //if ($("#kq_file")[0].files.length > 0) {
+    //    formData.append("kq_file", $("#kq_file")[0].files[0]);
+    //}
+    //else {
+    //    alert("请选择上传文件");
+    //    return;
+    //}
+    var start_date = $("#start_date").val();
+    var end_date = $("#end_date").val();
+    var request_data = { Token: Token, start_date: start_date, end_date: end_date };
+    var url = "/API/APIAtt/StcAttReport";
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
     $.ajax({
-        method: "POST",
-        url: "/API/APIAtt/StcAttOld",
-        data: formData,
-        dataType: "json",
-        contentType: false, //传文件必须！
-        processData: false, //传文件必须！
+        type: 'POST',
+        url: url,
+        data: request_data,
         success: function (data) {
             if (data.error_code === 0) {
 
-                //console.log(list);
-                $("#pro").html("");
+                //console.log(data.data);
                 $('#dg').datagrid('loadData', data.data);
+                $("#pro").html("");
             }
             else {
                 alert(data.error_code + data.message);
@@ -94,8 +94,34 @@ function Stc_Att() {
         error: function () {
             alert("服务器错误");
             $("#pro").html("");
-        }
+        },
+        dataType: "json"
     });
+    //$.ajax({
+    //    method: "POST",
+    //    url: "/API/APIAtt/StcAttReport",
+    //    data: formData,
+    //    dataType: "json",
+    //    contentType: false, //传文件必须！
+    //    processData: false, //传文件必须！
+    //    success: function (data) {
+    //        if (data.error_code === 0) {
+
+    //            //console.log(list);
+    //            $("#pro").html("");
+    //            $('#dg').datagrid('loadData', data.data);
+    //        }
+    //        else {
+    //            alert(data.error_code + data.message);
+    //            $("#pro").html("");
+
+    //        }
+    //    },
+    //    error: function () {
+    //        alert("服务器错误");
+    //        $("#pro").html("");
+    //    }
+    //});
 
 }
 function formatSumAtt(val, row) {

@@ -16,6 +16,13 @@ namespace Common
             this.ConnectSQLServerDB("192.168.27.190", "Att", "admin", "CTzy60023925");//
         }
     }
+    public class DBAtt130 : DBSQL
+    {
+        public DBAtt130()
+        {
+            this.ConnectSQLServerDB("192.168.27.130", "Att", "att", "CTzy60023925");//
+        }
+    }
     public class DBHR : DBSQL
     {
         public DBHR()

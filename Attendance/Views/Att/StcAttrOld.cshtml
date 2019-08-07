@@ -49,9 +49,12 @@
     </div>
     <div id="tb1" style="padding:5px;height:auto">
         <form id="form1">
-            选择月份
-            <input id="attYearMonth" onclick="setmonth(this)" readonly="readonly" type="text">
-            <input type="file" id="kq_file" name="kq_file" value="上传考勤记录文件..." onchange="getUrl(this.files);" />
+            @*选择月份*@
+            @*<input id="attYearMonth" onclick="setmonth(this)" readonly="readonly" type="text">*@
+            @*<input type="file" id="kq_file" name="kq_file" value="上传考勤记录文件..." onchange="getUrl(this.files);" />*@
+            <input id="start_date" class="easyui-datebox" data-options="formatter:myformatter,parser:myparser">
+            -
+            <input id="end_date" class="easyui-datebox" data-options="formatter:myformatter,parser:myparser">
             <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:200px" onclick="Stc_Att()">计算考勤报表</a>
         </form>
 

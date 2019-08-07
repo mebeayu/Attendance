@@ -175,6 +175,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Att.cs" />
+    <Compile Include="Models\DateRange.cs" />
     <Compile Include="Models\LeaveQuest.cs" />
     <Compile Include="Models\LoginRequest.cs" />
     <Compile Include="Models\Person.cs" />
@@ -182,6 +184,7 @@
     <Compile Include="Models\TokenObj.cs" />
     <Compile Include="Models\Trip.cs" />
     <Compile Include="Models\UserInfo.cs" />
+    <Compile Include="Models\UserRel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
