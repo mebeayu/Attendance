@@ -10,6 +10,7 @@ $(document).ready(function () {
     dg = $('#dg');
     dg.datagrid({
         onDblClickRow: function (index, row) {
+            console.log(row);
             var start_date = $("#start_date").val();
             var end_date = $("#end_date").val();
             $('#dg_daily').datagrid('loadData', []);
@@ -17,7 +18,10 @@ $(document).ready(function () {
 
             $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
 
-            var request_data = { Token: Token, UID: row.UID, LOGINID: row.LOGINID, LASTNAME: row.LASTNAME, StartDate: start_date, EndDate: end_date };
+            var request_data = {
+                Token: Token, UID: row.UID, LOGINID: row.LOGINID, LASTNAME: row.LASTNAME,
+                StartDate: start_date, EndDate: end_date, att_userid: row.att_userid
+            };
             console.log(request_data);
             var url = "/API/APIAtt/GetPersonTripandLeaveDetail";
             $.ajax({
@@ -29,7 +33,7 @@ $(document).ready(function () {
                         console.log(data.data);
                         
                         console.log(data.data);
-                        $('#dg_daily').datagrid('loadData', data.data.person.ListDetail);
+                        $('#dg_daily').datagrid('loadData', data.data.list_att);
                         $('#dg_leave').datagrid('loadData', data.data.list_leave);
                         $('#dg_trip').datagrid('loadData', data.data.list_trip);
                         $("#pro1").html("");

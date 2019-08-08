@@ -11,5 +11,9 @@ namespace Attendance.Models
         public string date_day { get; set; }  
         public DateTime first { get; set; }
         public DateTime last { get; set; }
+        public string name { get; set; }
+        public string mobile { get; set; }
+        public string first_str { get; set; }
+        public string last_str { get; set; }
     }
 }

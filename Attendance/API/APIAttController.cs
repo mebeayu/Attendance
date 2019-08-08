@@ -306,13 +306,21 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            Person p = AttBiz.GetPersonAtt(obj.LOGINID, obj.Month);
-            if (p==null)
+            DBOA dboa = new DBOA();
+            DataSet ds = dboa.ExeQuery($"select id,MOBILE,LOGINID from HRMRESOURCE where LOGINID='{obj.LOGINID}'");
+            string mobile = ds.Tables[0].Rows[0]["MOBILE"].ToString();
+            dboa.Close();
+            DBAtt130 db = new DBAtt130();
+            ds = db.ExeQuery($"select USERID from USERINFO where PAGER='{mobile}'");
+            db.Close();
+            string att_uid = ds.Tables[0].Rows[0][0].ToString();
+            List<Att> list_att = AttBiz.GetPersonAtt(att_uid, obj.Month);
+            if (list_att == null)
             {
                 return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
             }
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
-            data.data = p;
+            data.data = list_att;
             return data;
         }
         /// <summary>
@@ -342,7 +350,9 @@ namespace Attendance.API
             leaveObj.EndDate = obj.EndDate;
             List<LeaveQuest> list_leave = attbiz.QueryLeave(leaveObj);
             List<Trip> list_trip_one = new List<Trip>();
-            Person p = AttBiz.GetPersonAtt(obj.LOGINID, obj.StartDate.Substring(0,7));
+
+            List<Att> list_att = new List<Att>();
+            if (obj.att_userid!=null&& obj.att_userid != "") list_att = AttBiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7));
             attbiz.Close();
             for (int i = 0; i < list_trip.Count; i++)
             {
@@ -355,7 +365,7 @@ namespace Attendance.API
             }
             d.list_leave = list_leave;
             d.list_trip = list_trip_one;
-            d.person = p;
+            d.list_att = list_att;
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = d;
             return data;

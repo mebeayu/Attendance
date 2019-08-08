@@ -20,11 +20,8 @@ function GetPersonAtt() {
         success: function (data) {
             if (data.error_code === 0) {
 
-                console.log(data.data);
-                var list = [];
-                list.push(data.data);
-                $('#dg').datagrid('loadData', list);
-                $('#dg1').datagrid('loadData', data.data.ListDetail);
+                //$('#dg').datagrid('loadData', list);
+                $('#dg1').datagrid('loadData', data.data);
                 $("#pro").html("");
             }
             else {

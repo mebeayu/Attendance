@@ -10,9 +10,12 @@ $(document).ready(function () {
     }
     
     user_inf = JSON.parse(localStorage.getItem("user_info"));
+
     
     if (user_inf.type === "0") {
-        //$("#memu1").hide();
+        
+            $("#att_report").hide();
+       
     }
     uid = localStorage.getItem("uid");
 
@@ -49,14 +52,16 @@ function Login() {
         success: function (data) {
 
             if (data.error_code === 0) {
-                //console.log(data.data);
+                console.log(data.data);
                 //return;
                 Token = data.data.Token;
                 //console.log(Token);
                 localStorage.setItem("Token", Token);
                 localStorage.setItem("uid", uid);
                 localStorage.setItem("user_info", JSON.stringify(data.data));
-
+                if (data.data.type !== "100") {
+                    $("#att_report").hide();
+                }
                 window.location.href = "/Att/Index";
                 $("#pro1").html("");
             }

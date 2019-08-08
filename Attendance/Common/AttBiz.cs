@@ -5,7 +5,13 @@ using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Attendance.Common
@@ -266,11 +272,12 @@ namespace Attendance.Common
                     else
                     {
                         p.AttDay += 1;
+                        DateTime first_ok = DateTime.Parse($"{list_date[i]} 9:00");
+                        DateTime last_ok = DateTime.Parse($"{list_date[i]} 17:00");
+                        if (oneAtt.first > first_ok) p.LateCount += 1;
+                        if (oneAtt.last < last_ok) p.EarlyCount += 1;
                     }
-                    DateTime first_ok = DateTime.Parse($"{list_date[i]} 9:00");
-                    DateTime last_ok = DateTime.Parse($"{list_date[i]} 17:00");
-                    if (oneAtt.first > first_ok) p.LateCount += 1;
-                    if (oneAtt.last < last_ok) p.EarlyCount += 1;
+                    
                 }
                 
 
@@ -296,7 +303,7 @@ namespace Attendance.Common
             }
             string mobile_str = string.Join(",", mobiles);
             ds = db130.ExeQuery($@"select USERID,convert(varchar(10),CHECKTIME,120) as date_day,MIN(CHECKTIME) as f,MAX(CHECKTIME) as l 
-                                from CHECKINOUT where CHECKTIME>='{start_date}' and CHECKTIME<='{end_date}'
+                                from CHECKINOUT where convert(varchar(10),CHECKTIME,120)>='{start_date}' and convert(varchar(10),CHECKTIME,120)<='{end_date}'
                                 GROUP BY convert(varchar(10),CHECKTIME,120),USERID");
             List<Att> list_att_record = new List<Att>();//考勤记录
             for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
@@ -331,9 +338,17 @@ namespace Attendance.Common
             List<string> list_date = new List<string>();
             DateTime first_day = DateTime.Parse( start_date);
             DateTime last_day = DateTime.Parse(end_date);
+            int work_day = 0;
             while(first_day<= last_day)
             {
-                list_date.Add(first_day.ToString("yyyy-MM-dd"));
+                bool IsHoliday = IsHolidayByDate(first_day);
+                
+                if (IsHoliday == false)
+                {
+                    work_day++;
+                    list_date.Add(first_day.ToString("yyyy-MM-dd"));
+                }
+                
                 first_day = first_day.AddDays(1);
             }
             Trip t = new Trip();
@@ -347,6 +362,7 @@ namespace Attendance.Common
             {
                 Person p = QueryPersonAtt_2(list_user_rel[i].oa_userid, list_user_rel[i].att_userid, start_date, end_date, list_trip, list_att_record, list_date, list_user_rel[i].name);
                 p.att_userid = list_user_rel[i].att_userid;
+                p.WorkDay = work_day;
                 list_person.Add(p);
             }
             return list_person;
@@ -530,11 +546,51 @@ namespace Attendance.Common
             db.Close();
             return list;
         }
-        public static Person GetPersonAtt(string att_uid,string Month)
+        public static List<Att> GetPersonAtt(string att_uid,string Month)
         {
-
-            Person p = 
-            return p;
+            DBAtt130 db = new DBAtt130();
+            DataSet ds = db.ExeQuery($@"SELECT
+	                                    a.NAME,a.USERID,a.PAGER, 
+	                                    CONVERT ( VARCHAR ( 10 ), CHECKTIME, 120 ) AS date,
+	                                    MIN( CHECKTIME ) AS f,
+	                                    MAX( CHECKTIME ) AS l 
+                                    FROM
+	                                    USERINFO a left join CHECKINOUT b on a.USERID=b.USERID 
+	                                    where CONVERT ( VARCHAR ( 10 ), CHECKTIME, 120 )  like '{Month}%' and a.USERID={att_uid} 
+                                    GROUP BY
+	                                    CONVERT ( VARCHAR ( 10 ), CHECKTIME, 120 ),
+	                                    a.USERID,a.NAME,a.PAGER ");
+            db.Close();
+            List<Att> list = new List<Att>();
+            
+            for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+            {
+                Att a = new Att();
+                a.att_userid = ds.Tables[0].Rows[i]["USERID"].ToString();
+                a.name = ds.Tables[0].Rows[i]["NAME"].ToString();
+                a.mobile = ds.Tables[0].Rows[i]["PAGER"].ToString();
+                a.date_day = ds.Tables[0].Rows[i]["date"].ToString();
+                a.first = DateTime.Parse(ds.Tables[0].Rows[i]["f"].ToString());
+                a.last = DateTime.Parse(ds.Tables[0].Rows[i]["l"].ToString());
+                a.first_str = a.first.ToString("yyyy-MM-dd HH:mm:ss");
+                a.last_str = a.last.ToString("yyyy-MM-dd HH:mm:ss");
+                if (a.first==a.last)
+                {
+                    DateTime basetime = DateTime.Parse($"{a.date_day} 12:0:0");
+                    if (a.first <= basetime)
+                    {
+                        a.last = DateTime.Parse($"1900-01-01 0:0:0");
+                        a.last_str = "";
+                    }
+                    else
+                    {
+                        a.first = DateTime.Parse($"1900-01-01 0:0:0");
+                        a.first_str = "";
+                    }
+                }
+                list.Add(a);
+            }
+            return list;
         }
         public int AddLog(string uid,string text)
         {
@@ -576,6 +632,60 @@ namespace Attendance.Common
 
                 return 0;
             }
+        }
+        /// <summary>
+        /// 判断是不是周末/节假日
+        /// </summary>
+        /// <param name="date">日期</param>
+        /// <returns>周末和节假日返回true，工作日返回false</returns>
+        public static bool IsHolidayByDate(DateTime date)
+        {
+            var isHoliday = false;
+            var webClient = new System.Net.WebClient();
+            var PostVars = new System.Collections.Specialized.NameValueCollection
+            {
+                { "d", date.ToString("yyyyMMdd") }//参数
+            };
+            try
+            {
+                var day = date.DayOfWeek;
+                string jsonData = $"{{ \"d\", {date.ToString("yyyyMMdd")} }}";//参数
+                //判断是否为周末
+                if (day == DayOfWeek.Sunday || day == DayOfWeek.Saturday)
+                    return true;
+
+                ////0为工作日，1为周末，2为法定节假日
+                //ServicePointManager.Expect100Continue = false;
+                //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://tool.bitefu.net/jiari/");
+                //request.ServicePoint.Expect100Continue = false;//指定此属性为false
+                //request.Method = "POST";
+                //request.ContentType = "application/json";
+                //Stream requestStream = request.GetRequestStream();
+                //StreamWriter streamWriter = new StreamWriter(requestStream, Encoding.GetEncoding("utf-8"));
+                //streamWriter.Write(jsonData);
+                //streamWriter.Flush();
+                //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                //Stream responseStream = response.GetResponseStream();
+                //StreamReader streamReader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
+                ////获取响应内容
+                //using (StreamReader reader = new StreamReader(responseStream, Encoding.UTF8))
+                //{
+                //    string result = reader.ReadToEnd();
+                //    if (result == "1" || result == "2") isHoliday = true;
+                //}
+
+
+
+               //var byteResult = await webClient.UploadValuesTaskAsync("http://tool.bitefu.net/jiari/", "POST", PostVars);//请求地址,传参方式,参数集合
+               // var result = Encoding.UTF8.GetString(byteResult);//获取返回值
+               // if (result == "1" || result == "2")
+               //     isHoliday = true;
+            }
+            catch
+            {
+                isHoliday = false;
+            }
+            return isHoliday;
         }
     }
 }

@@ -32,8 +32,11 @@
                     <th data-options="field:'WorkDay',resizable:true" width="60px">应勤</th>
                     <th data-options="field:'SumAtt',resizable:true,formatter:formatSumAtt" width="60px">实勤合计</th>
                     <th data-options="field:'AttDay',resizable:true" width="60px">实勤</th>
+                    <th data-options="field:'NoAttDay',resizable:true" width="60px">未打卡天</th>
+                    <th data-options="field:'LateCount',resizable:true" width="60px">迟到</th>
+                    <th data-options="field:'EarlyCount',resizable:true" width="60px">早退</th>
                     @*<th data-options="field:'LateCount',resizable:true,formatter:formatNum" width="60px">迟到</th>
-                        <th data-options="field:'EarlyCount',resizable:true,formatter:formatNum" width="60px">早退</th>*@
+        <th data-options="field:'EarlyCount',resizable:true,formatter:formatNum" width="60px">早退</th>*@
                     <th data-options="field:'Trip',resizable:true,formatter:formatNum" width="60px">出差</th>
                     <th data-options="field:'Leave0',resizable:true,formatter:formatNum" width="60px">事假</th>
                     <th data-options="field:'Leave1',resizable:true,formatter:formatNum" width="60px">病假</th>
@@ -60,17 +63,17 @@
 
     </div>
     @*个人明细对话框*@
-    <div id="dlg_show_person" class="easyui-dialog" title="打卡明细" data-options="modal:true,iconCls:'icon-doc',closed: true" style="width:900px;height:600px;padding:10px">
+    <div id="dlg_show_person" class="easyui-dialog" title="打卡明细" data-options="modal:true,iconCls:'icon-doc',closed: true" style="width:1000px;height:600px;padding:10px">
         <a id="pro1"></a>
         <table width="100%" height="100%">
             <tr>
-                <td  width="28%">
+                <td  width="33%">
                     <table id="dg_daily" class="easyui-datagrid" style="width:100%;height:100%;text-align:center"
                            data-options="singleSelect:true,collapsible:false" rownumbers="true" pagination="false">
                         <thead>
                             <tr>
-                                <th data-options="field:'morning',resizable:true" width="80px">上午</th>
-                                <th data-options="field:'afternoon',resizable:true" width="80px">下午</th>
+                                <th data-options="field:'first_str',resizable:true" width="150px">上午</th>
+                                <th data-options="field:'last_str',resizable:true" width="150px">下午</th>
                             </tr>
                         </thead>
                     </table>
