@@ -12,11 +12,11 @@ $(document).ready(function () {
     user_inf = JSON.parse(localStorage.getItem("user_info"));
 
     
-    if (user_inf.type === "0") {
+    //if (user_inf.type === "0") {
         
-            $("#att_report").hide();
+    //        $("#att_report").hide();
        
-    }
+    //}
     uid = localStorage.getItem("uid");
 
     var today = new Date();

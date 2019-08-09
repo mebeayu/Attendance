@@ -30,6 +30,7 @@ namespace Attendance.Models
         public double Leave6 { get; set; }
         public double Leave7 { get; set; }
         public double SumAtt { get; set; }
+        public double Gongchu { get; set; }
         public List<DayDetail> ListDetail { get; set; }
 
         public string StartDate { get; set; }

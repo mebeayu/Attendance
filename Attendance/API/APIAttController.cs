@@ -253,13 +253,13 @@ namespace Attendance.API
         [ActionName("StcAttReport")]
         public DataResult StcAttReport([FromBody]DateRange obj)
         {
-            //TokenObj tokenObj = CheckToken(obj.Token, out code);
-            //if (code != MessageCode.SUCCESS)
-            //{
-            //    return DataResult.InitFromMessageCode(code);
-            //}
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
             AttBiz attbiz = new AttBiz();
-            List<Person> list = attbiz.StcAttReport(obj.start_date, obj.end_date);
+            List<Person> list = attbiz.StcAttReport(obj.start_date, obj.end_date, tokenObj);
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = list;
@@ -314,7 +314,7 @@ namespace Attendance.API
             ds = db.ExeQuery($"select USERID from USERINFO where PAGER='{mobile}'");
             db.Close();
             string att_uid = ds.Tables[0].Rows[0][0].ToString();
-            List<Att> list_att = AttBiz.GetPersonAtt(att_uid, obj.Month);
+            List<Att> list_att = AttBiz.GetPersonAtt(att_uid, obj.Month, tokenObj.uid);
             if (list_att == null)
             {
                 return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
@@ -352,7 +352,7 @@ namespace Attendance.API
             List<Trip> list_trip_one = new List<Trip>();
 
             List<Att> list_att = new List<Att>();
-            if (obj.att_userid!=null&& obj.att_userid != "") list_att = AttBiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7));
+            if (obj.att_userid!=null&& obj.att_userid != "") list_att = AttBiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7),tokenObj.uid);
             attbiz.Close();
             for (int i = 0; i < list_trip.Count; i++)
             {

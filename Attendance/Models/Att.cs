@@ -15,5 +15,7 @@ namespace Attendance.Models
         public string mobile { get; set; }
         public string first_str { get; set; }
         public string last_str { get; set; }
+        public string week { get; set; }
+        public string gongchu { get; set; }
     }
 }

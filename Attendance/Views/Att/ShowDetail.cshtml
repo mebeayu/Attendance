@@ -44,14 +44,17 @@
                 </tr>
             </thead>
         </table>*@
-        <table id="dg1" class="easyui-datagrid" style="width:100%;height:70%;text-align:center"
+        <table id="dg1" class="easyui-datagrid" style="width:100%;height:95%;text-align:center"
                data-options="singleSelect:true,collapsible:false,toolbar:'#tb1'" rownumbers="true" pagination="false">
             <thead>
                 <tr>
-                    <th data-options="field:'name',resizable:true" width="180px">姓名</th>
-                    <th data-options="field:'mobile',resizable:true" width="180px">电话</th>
-                    <th data-options="field:'first_str',resizable:true" width="180px">上午</th>
-                    <th data-options="field:'last_str',resizable:true" width="180px">下午</th>
+                    <th data-options="field:'date_day',resizable:true" width="100px">日期</th>
+                    <th data-options="field:'week',resizable:true" width="80px">星期</th>
+                    <th data-options="field:'name',resizable:true" width="80px">姓名</th>
+                    <th data-options="field:'mobile',resizable:true" width="100px">电话</th>
+                    <th data-options="field:'first_str',resizable:true" width="160px">上午打卡时间</th>
+                    <th data-options="field:'last_str',resizable:true" width="160px">下午打卡时间</th>
+                    <th data-options="field:'gongchu',resizable:true" width="160px">已批准公出</th>
                 </tr>
             </thead>
         </table>

@@ -177,6 +177,7 @@
     </Compile>
     <Compile Include="Models\Att.cs" />
     <Compile Include="Models\DateRange.cs" />
+    <Compile Include="Models\Gongchu.cs" />
     <Compile Include="Models\LeaveQuest.cs" />
     <Compile Include="Models\LoginRequest.cs" />
     <Compile Include="Models\Person.cs" />

@@ -11,5 +11,6 @@ namespace Attendance.Models
         public string att_userid { get; set; }
         public string mobile { get; set; }
         public string name { get; set; }
+        public string oa_login_id { get; set; }
     }
 }
