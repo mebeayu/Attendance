@@ -287,7 +287,7 @@ namespace Attendance.Common
             int n = arrUID.Count;
             for (int i = 0; i < n; i++)
             {
-                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip);
+                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip,null);
                 list.Add(p);
 
             }
@@ -385,8 +385,9 @@ namespace Attendance.Common
                 list_att_record.Add(a);
             }
             db130.Close();
-            DBOA dboa = new DBOA();
-            ds = dboa.ExeQuery($@"select ID,MOBILE,LOGINID from HRMRESOURCE where MOBILE in({mobile_str})");
+            DBOA dboa = new DBOA();//$@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID where a.id ={ uid}"
+            ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from 
+                                HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID from HRMRESOURCE where a.MOBILE in({mobile_str})");
             dboa.Close();
             string expression = "";
             List<string> arrOAUID = new List<string>();
@@ -402,6 +403,7 @@ namespace Attendance.Common
                 {
                     list_user_rel[i].oa_userid = rows[0]["ID"].ToString();
                     list_user_rel[i].oa_login_id = rows[0]["LOGINID"].ToString();
+                    list_user_rel[i].department = rows[0]["DEPARTMENTNAME"].ToString();
                     arrOAUID.Add(list_user_rel[i].oa_userid);
                 }
             }
@@ -434,7 +436,7 @@ namespace Attendance.Common
                 if (tokenObj.type == "100")
                 {
                     Person p = QueryPersonAtt_2(list_user_rel[i].oa_userid, list_user_rel[i].att_userid, start_date, end_date,
-                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name);
+                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name, list_user_rel);
                     p.att_userid = list_user_rel[i].att_userid;
                     p.WorkDay = work_day;
                     list_person.Add(p);
@@ -444,7 +446,7 @@ namespace Attendance.Common
                     if (list_user_rel[i].oa_login_id == tokenObj.uid)
                     {
                         Person p = QueryPersonAtt_2(list_user_rel[i].oa_userid, list_user_rel[i].att_userid, start_date, end_date,
-                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name);
+                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name, list_user_rel);
                         p.att_userid = list_user_rel[i].att_userid;
                         p.WorkDay = work_day;
                         list_person.Add(p);
@@ -467,6 +469,7 @@ namespace Attendance.Common
         {
             DataSet ds = null;
             Person p = new Person();
+            p.LASTNAME = "";
             if (list_user_rel == null)
             {
                 ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a 
@@ -474,7 +477,6 @@ namespace Attendance.Common
 
                 if (ds == null || ds.Tables[0].Rows.Count == 0)
                 {
-                    p.LASTNAME = "";
                     dboa.Close();
                     return p;
                 }
@@ -486,7 +488,18 @@ namespace Attendance.Common
             }
             else
             {
-
+                for (int i = 0; i < list_user_rel.Count; i++)
+                {
+                    if (list_user_rel[i].oa_userid == uid)
+                    {
+                        p.UID = uid;
+                        p.LASTNAME = list_user_rel[i].name;
+                        p.MOBILE = list_user_rel[i].mobile;
+                        p.Department = list_user_rel[i].department;
+                        p.LOGINID = list_user_rel[i].oa_login_id;
+                    }
+                    
+                }
             }
 
 
