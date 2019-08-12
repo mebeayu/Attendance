@@ -220,16 +220,17 @@ namespace Attendance.Common
                 if (e > end) e = end;
                 TimeSpan timeSpan = e - s;
                 trip.Days = timeSpan.Days + 1;
-                if (cacheDic.Keys.Contains(key) == false)
-                {
-                    list.Add(trip);
-                    cacheDic.Add(key, 0);
-                }
+
+                //if (cacheDic.Keys.Contains(key) == false)//添加经办人的出差记录
+                //{
+                //    list.Add(trip);
+                //    cacheDic.Add(key, 0);
+                //}
                 string strIDS = ds.Tables[0].Rows[i]["CC8"].ToString();
                 string[] arrIDs = strIDS.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 for (int j = 0; j < arrIDs.Length; j++)
                 {
-                    if (arrIDs[j] == trip.UID) continue;
+                    //if (arrIDs[j] == trip.UID) continue;
                     Trip trip1 = new Trip();
                     trip1.UID = arrIDs[j];
 

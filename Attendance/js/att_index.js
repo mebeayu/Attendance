@@ -43,7 +43,7 @@ function Login() {
     var uid = $("#uid").val();
     var psw = $("#psw").val();
     $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
-    var login_data = { uid: uid, psw: psw };
+    var login_data = { oa_login_id: uid, psw: psw };
     //console.log(login_data);
     var url = "/API/APIAtt/Login";
     $.ajax({
