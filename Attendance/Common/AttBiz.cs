@@ -386,8 +386,8 @@ namespace Attendance.Common
             }
             db130.Close();
             DBOA dboa = new DBOA();//$@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID where a.id ={ uid}"
-            ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from 
-                                HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID from HRMRESOURCE where a.MOBILE in({mobile_str})");
+            ds = dboa.ExeQuery($@"select a.ID,LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from 
+                                HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID  where a.MOBILE in({mobile_str})");
             dboa.Close();
             string expression = "";
             List<string> arrOAUID = new List<string>();
@@ -469,7 +469,12 @@ namespace Attendance.Common
         {
             DataSet ds = null;
             Person p = new Person();
+
             p.LASTNAME = "";
+            if (uid=="")
+            {
+                return p;
+            }
             if (list_user_rel == null)
             {
                 ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a 
@@ -502,13 +507,7 @@ namespace Attendance.Common
                 }
             }
 
-
-
-            p.UID = uid;
-            p.LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
-            p.MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
-            p.Department = ds.Tables[0].Rows[0]["DEPARTMENTNAME"].ToString();
-            p.LOGINID = ds.Tables[0].Rows[0]["LOGINID"].ToString();
+            
             ds = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
             where xjsq5={uid} and b.NOWNODETYPE=3 and 
             ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");

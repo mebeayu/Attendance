@@ -200,6 +200,7 @@
     <Content Include="js\att_index.js" />
     <Content Include="js\oa_leave.js" />
     <Content Include="js\oa_trip.js" />
+    <Content Include="js\point_oa.js" />
     <Content Include="js\show_detail.js" />
     <Content Include="js\stc_att.js" />
     <Content Include="js\stc_att_old.js" />
@@ -232,6 +233,7 @@
     <Content Include="Views\Att\StcAttr.cshtml" />
     <Content Include="Views\Att\StcAttrOld.cshtml" />
     <Content Include="Views\Att\ShowDetail.cshtml" />
+    <Content Include="Views\Att\PointOA.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

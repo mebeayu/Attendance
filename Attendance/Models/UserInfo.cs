@@ -12,5 +12,6 @@ namespace Attendance.Models
         public string type { get; set; }
         public string department_id { get; set; }
         public string department_path { get; set; }
+        public string oa_login_id { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace Attendance.Models
 {
     public class LoginRequest
     {
-        public string uid { get; set; }
+        public string oa_login_id { get; set; }
         public string psw { get; set; }
     }
 }

@@ -22,6 +22,7 @@ $(document).ready(function () {
     var today = new Date();
     $("#start_time").textbox('setValue', today.getFullYear() + "-01-01");
     $('#end_time').textbox('setValue', myformatter(today));
+    $("#iframe_maincontent").attr("src", "/Att/ShowDetail");
 });
 function stc_leave() {
     $("#iframe_maincontent").attr("src", "/Att/StcOALeave");
@@ -59,9 +60,9 @@ function Login() {
                 localStorage.setItem("Token", Token);
                 localStorage.setItem("uid", uid);
                 localStorage.setItem("user_info", JSON.stringify(data.data));
-                if (data.data.type !== "100") {
-                    $("#att_report").hide();
-                }
+                //if (data.data.type !== "100") {
+                //    $("#att_report").hide();
+                //}
                 window.location.href = "/Att/Index";
                 $("#pro1").html("");
             }

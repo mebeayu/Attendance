@@ -1,6 +1,12 @@
 ﻿$(document).ready(function () {
     Token = localStorage.getItem("Token");
     uid = localStorage.getItem("uid");
+    var today = new Date();
+    var m = today.getMonth() + 1;
+    var m1 = today.getFullYear() + "-" + (m < 10 ? ('0' + m) : m);
+    console.log(m1);
+    $("#attYearMonth").val(m1);
+    GetPersonAtt();
     //yearmonth("#attYearMonth");
 });
 function GetPersonAtt() {
@@ -11,7 +17,8 @@ function GetPersonAtt() {
     }
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
     var request_data = { Token: Token, LOGINID: uid, Month: month };
-    console.log(request_data);
+    $("#btn_see").linkbutton("disable");
+    //console.log(request_data);
     var url = "/API/APIAtt/GetPersonAtt";
     $.ajax({
         type: 'POST',
@@ -29,10 +36,12 @@ function GetPersonAtt() {
                 $("#pro").html("");
 
             }
+            $("#btn_see").linkbutton("enable")
         },
         error: function () {
             alert("服务器错误");
             $("#pro").html("");
+            $("#btn_see").linkbutton("enable")
         },
         dataType: "json"
     });

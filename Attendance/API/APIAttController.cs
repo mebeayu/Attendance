@@ -22,10 +22,10 @@ namespace Attendance.API
     {
         int code = 0;
         private static Dictionary<string, string> tokenCache = new Dictionary<string, string>();
-        public static string MakeToken(string uid, string psw, string type, string department_id)
+        public static string MakeToken(string oa_logid, string psw, string type, string department_id)
         {
             TokenObj obj = new TokenObj();
-            obj.uid = uid;
+            obj.uid = oa_logid;
             obj.psw = psw;
             obj.type = type;
             obj.department_id = department_id;
@@ -92,8 +92,12 @@ namespace Attendance.API
             string md5PSW = MD5.GetMD5Hash(tokenObj.psw);
             if (md5PSW != ds.Tables[0].Rows[0]["PASSWORD"].ToString())
             {
-                code = MessageCode.ERROR_TOKEN_VALIDATE;
-                return null;
+                if (tokenObj.psw!= ds.Tables[0].Rows[0]["PASSWORD"].ToString())
+                {
+                    code = MessageCode.ERROR_TOKEN_VALIDATE;
+                    return null;
+                }
+               
             }
 
             tokenCache[tokenObj.uid] = Token;
@@ -102,12 +106,75 @@ namespace Attendance.API
             return tokenObj;
         }
         [HttpPost]
+        [ActionName("TakePointToOA")]
+        public DataResult TakePointToOA([FromBody]LoginRequest obj)
+        {
+            DBOA dboa = new DBOA();
+            DataSet ds = dboa.ExeQuery("select LOGINID,PASSWORD,LASTNAME,MOBILE,DEPARTMENTID from HRMRESOURCE where LOGINID=:LOGINID", new OracleParameter("LOGINID", obj.oa_login_id));
+            dboa.Close();
+            if (ds.Tables[0].Rows.Count==0)
+            {
+                DataResult r = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
+                r.message = "用户不存在";
+                return r;
+            }
+            string LASTNAME = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
+            string MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
+            string DEPARTMENTID = ds.Tables[0].Rows[0]["DEPARTMENTID"].ToString();
+            string PASSWORD = ds.Tables[0].Rows[0]["PASSWORD"].ToString();
+            DBHR dbhr = new DBHR();
+            ds = dbhr.ExeQuery("select oa_dept_path from oa_dept where oa_dept_id=@oa_dept_id", new SqlParameter("oa_dept_id", DEPARTMENTID));
+            dbhr.Close();
+            string department_path = "";
+            if (ds.Tables[0].Rows.Count > 0)
+            {
+                department_path = ds.Tables[0].Rows[0][0].ToString();
+            }
+            DB db = new DB();
+            ds = db.ExeQuery("select * from login_user where uid=@uid", new SqlParameter("uid", obj.oa_login_id));
+            string type = "0";
+            if (ds.Tables[0].Rows.Count == 0)
+            {
+                int res = db.ExeCMD(@"insert into login_user(uid,name,mobile,department_id,department_path) 
+                                    values(@uid,@name,@mobile,@department_id,@department_path)",
+                                    new SqlParameter("uid", obj.oa_login_id),
+                                    new SqlParameter("name", LASTNAME),
+                                    new SqlParameter("mobile", MOBILE),
+                                    new SqlParameter("department_id", DEPARTMENTID),
+                                    new SqlParameter("department_path", department_path));
+            }
+            else
+            {
+                type = ds.Tables[0].Rows[0]["type"].ToString();
+                int res = db.ExeCMD("update login_user set name=@name,mobile=@mobile,department_id=@department_id,department_path=@department_path where uid=@uid",
+                                    new SqlParameter("uid", obj.oa_login_id),
+                                    new SqlParameter("name", LASTNAME),
+                                    new SqlParameter("mobile", MOBILE),
+                                    new SqlParameter("department_id", DEPARTMENTID),
+                                    new SqlParameter("department_path", department_path));
+            }
+            db.Close();
+            DataResult return_data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            string Token = MakeToken(obj.oa_login_id, PASSWORD, type, DEPARTMENTID);
+            UserInfo u = new UserInfo();
+            u.Token = Token;
+            u.name = LASTNAME;
+            u.type = type;
+            u.department_id = DEPARTMENTID;
+            u.department_path = department_path;
+            u.oa_login_id = obj.oa_login_id;
+            tokenCache[obj.oa_login_id] = Token;
+            return_data.data = u;
+            return return_data;
+
+        }
+        [HttpPost]
         [ActionName("Login")]
         public DataResult Login([FromBody]LoginRequest obj)
         {
 
             DBOA dboa = new DBOA();
-            DataSet ds = dboa.ExeQuery("select LOGINID,PASSWORD,LASTNAME,MOBILE,DEPARTMENTID from HRMRESOURCE where LOGINID=:LOGINID", new OracleParameter("LOGINID", obj.uid));
+            DataSet ds = dboa.ExeQuery("select LOGINID,PASSWORD,LASTNAME,MOBILE,DEPARTMENTID from HRMRESOURCE where LOGINID=:LOGINID", new OracleParameter("LOGINID", obj.oa_login_id));
             dboa.Close();
             if (ds == null) return DataResult.InitFromMessageCode(MessageCode.ERROR_EXECUTE_SQL);
             if (ds.Tables[0].Rows.Count == 0) return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
@@ -125,13 +192,13 @@ namespace Attendance.API
                 department_path = ds.Tables[0].Rows[0][0].ToString();
             }
             DB db = new DB();
-            ds = db.ExeQuery("select * from login_user where uid=@uid", new SqlParameter("uid", obj.uid));
+            ds = db.ExeQuery("select * from login_user where uid=@uid", new SqlParameter("uid", obj.oa_login_id));
             string type = "0";
             if (ds.Tables[0].Rows.Count == 0)
             {
                 int res = db.ExeCMD(@"insert into login_user(uid,name,mobile,department_id,department_path) 
                                     values(@uid,@name,@mobile,@department_id,@department_path)",
-                                    new SqlParameter("uid", obj.uid),
+                                    new SqlParameter("uid", obj.oa_login_id),
                                     new SqlParameter("name", LASTNAME),
                                     new SqlParameter("mobile", MOBILE),
                                     new SqlParameter("department_id", DEPARTMENTID),
@@ -141,7 +208,7 @@ namespace Attendance.API
             {
                 type = ds.Tables[0].Rows[0]["type"].ToString();
                 int res = db.ExeCMD("update login_user set name=@name,mobile=@mobile,department_id=@department_id,department_path=@department_path where uid=@uid",
-                                    new SqlParameter("uid", obj.uid),
+                                    new SqlParameter("uid", obj.oa_login_id),
                                     new SqlParameter("name", LASTNAME),
                                     new SqlParameter("mobile", MOBILE),
                                     new SqlParameter("department_id", DEPARTMENTID),
@@ -149,14 +216,14 @@ namespace Attendance.API
             }
             db.Close();
             DataResult return_data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
-            string Token = MakeToken(obj.uid, obj.psw, type, DEPARTMENTID);
+            string Token = MakeToken(obj.oa_login_id, obj.psw, type, DEPARTMENTID);
             UserInfo u = new UserInfo();
             u.Token = Token;
             u.name = LASTNAME;
             u.type = type;
             u.department_id = DEPARTMENTID;
             u.department_path = department_path;
-            tokenCache[obj.uid] = Token;
+            tokenCache[obj.oa_login_id] = Token;
             return_data.data = u;
             return return_data;
         }
@@ -242,7 +309,7 @@ namespace Attendance.API
             t.UID = obj.UID;
             t.LASTNAME = "";
             List<Trip> list = attbiz.QueryTrip(t);
-            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list);
+            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list,null);
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = p;
@@ -307,7 +374,7 @@ namespace Attendance.API
                 return DataResult.InitFromMessageCode(code);
             }
             DBOA dboa = new DBOA();
-            DataSet ds = dboa.ExeQuery($"select id,MOBILE,LOGINID from HRMRESOURCE where LOGINID='{obj.LOGINID}'");
+            DataSet ds = dboa.ExeQuery($"select id,MOBILE,LOGINID from HRMRESOURCE where LOGINID='{tokenObj.uid}'");
             string mobile = ds.Tables[0].Rows[0]["MOBILE"].ToString();
             dboa.Close();
             DBAtt130 db = new DBAtt130();
