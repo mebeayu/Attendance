@@ -13,5 +13,6 @@ namespace Attendance.Models
         public string name { get; set; }
         public string oa_login_id { get; set; }
         public string department { get; set; }
+        public string oa_department_id { get; set; }
     }
 }

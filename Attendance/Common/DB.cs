@@ -9,6 +9,7 @@ using Oracle.ManagedDataAccess.Client;
 
 namespace Common
 {
+    
     public class DBAtt : DBSQL
     {
         public DBAtt()

@@ -14,6 +14,7 @@ namespace Attendance.Models
         public string MOBILE { get; set; }
         public string LASTNAME { get; set; }
         public string Department { get; set; }
+        public string oa_department_id { get; set; }
         public int WorkDay { get; set; }
         public double AttDay { get; set; }
         public double NoAttDay { get; set; }//未打卡天数

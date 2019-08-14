@@ -346,6 +346,7 @@ namespace Attendance.Common
                     p.Gongchu = list_gongchu[i].day_count;
                 }
             }
+            if (p.Department == null) p.Department = "";
             p.SumAtt = p.AttDay + p.Trip + p.Leave0 + p.Leave1 + p.Leave2 + p.Leave3 + p.Leave4 + p.Leave5 + p.Leave6 + p.Leave7 + p.Gongchu;
             return p;
         }
@@ -387,7 +388,7 @@ namespace Attendance.Common
             }
             db130.Close();
             DBOA dboa = new DBOA();//$@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID where a.id ={ uid}"
-            ds = dboa.ExeQuery($@"select a.ID,LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from 
+            ds = dboa.ExeQuery($@"select a.ID,LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID,a.DEPARTMENTID from 
                                 HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID  where a.MOBILE in({mobile_str})");
             dboa.Close();
             string expression = "";
@@ -405,6 +406,7 @@ namespace Attendance.Common
                     list_user_rel[i].oa_userid = rows[0]["ID"].ToString();
                     list_user_rel[i].oa_login_id = rows[0]["LOGINID"].ToString();
                     list_user_rel[i].department = rows[0]["DEPARTMENTNAME"].ToString();
+                    list_user_rel[i].oa_department_id = rows[0]["DEPARTMENTID"].ToString();
                     arrOAUID.Add(list_user_rel[i].oa_userid);
                 }
             }
@@ -455,6 +457,21 @@ namespace Attendance.Common
                 }
 
             }
+            DBHR db190 = new DBHR();
+            ds = db190.ExeQuery("select * from oa_dept");
+            db190.Close();
+            for (int i = 0; i < list_person.Count; i++)
+            {
+                if (list_person[i].oa_department_id == null) list_person[i].oa_department_id = "-1";
+                 expression = $"oa_dept_id={list_person[i].oa_department_id}";
+                DataRow[] rows = ds.Tables[0].Select(expression);
+                if (rows.Length>0)
+                {
+                    list_person[i].Department = rows[0]["oa_dept_path"].ToString();
+                }
+            }
+            
+            list_person.Sort((a, b) => a.Department.CompareTo(b.Department));
             return list_person;
         }
 
@@ -478,7 +495,7 @@ namespace Attendance.Common
             }
             if (list_user_rel == null)
             {
-                ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a 
+                ds = dboa.ExeQuery($@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID,a.DEPARTMENTID from HRMRESOURCE a 
                                     left join HRMDEPARTMENT b on a.DEPARTMENTID=b.ID where a.id={uid}");
 
                 if (ds == null || ds.Tables[0].Rows.Count == 0)
@@ -491,6 +508,7 @@ namespace Attendance.Common
                 p.MOBILE = ds.Tables[0].Rows[0]["MOBILE"].ToString();
                 p.Department = ds.Tables[0].Rows[0]["DEPARTMENTNAME"].ToString();
                 p.LOGINID = ds.Tables[0].Rows[0]["LOGINID"].ToString();
+                p.oa_department_id = ds.Tables[0].Rows[0]["DEPARTMENTID"].ToString();
             }
             else
             {
@@ -503,6 +521,7 @@ namespace Attendance.Common
                         p.MOBILE = list_user_rel[i].mobile;
                         p.Department = list_user_rel[i].department;
                         p.LOGINID = list_user_rel[i].oa_login_id;
+                        p.oa_department_id = list_user_rel[i].oa_department_id;
                     }
                     
                 }
