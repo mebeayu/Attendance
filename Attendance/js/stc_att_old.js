@@ -139,6 +139,15 @@ function formatSumAtt(val, row) {
         return val;
     }
 }
+function formatTagLate(val, row) {
+    //console.log(row);
+    if (row.late_tag === true) return "<span style='background: orangered'>" + val + "</span>";
+    else return val;
+}
+function formatTagEarly(val, row) {
+    if (row.early_tag === true) return "<span style='background: orangered'>" + val + "</span>";
+    else return val;
+}
 function formatNum(val, row) {
     if (val === 0) return "";
     else return val;

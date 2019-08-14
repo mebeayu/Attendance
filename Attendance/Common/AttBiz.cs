@@ -776,8 +776,8 @@ namespace Attendance.Common
                 a.date_day = ds.Tables[0].Rows[i]["date"].ToString();
                 a.first = DateTime.Parse(ds.Tables[0].Rows[i]["f"].ToString());
                 a.last = DateTime.Parse(ds.Tables[0].Rows[i]["l"].ToString());
-                a.first_str = a.first.ToString("yyyy-MM-dd HH:mm:ss");
-                a.last_str = a.last.ToString("yyyy-MM-dd HH:mm:ss");
+                a.first_str = a.first.ToString("HH:mm:ss");
+                a.last_str = a.last.ToString("HH:mm:ss");
                 //a.week = ((int)DateTime.Parse(a.date_day).DayOfWeek).ToString();
                 if (a.first == a.last)
                 {
@@ -793,7 +793,12 @@ namespace Attendance.Common
                         a.first_str = "";
                     }
                 }
-                //list.Add(a);
+  
+                    DateTime first_ok = DateTime.Parse($"{a.date_day} 9:00");
+                    DateTime last_ok = DateTime.Parse($"{a.date_day} 17:00");
+                    if (a.first > first_ok) a.late_tag = true;
+                    if (a.last < last_ok) a.early_tag = true;
+                
             }
             foreach (KeyValuePair<string, Att> item in dicTemp)
             {
