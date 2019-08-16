@@ -288,7 +288,7 @@ namespace Attendance.Common
             int n = arrUID.Count;
             for (int i = 0; i < n; i++)
             {
-                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip,null);
+                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip, null);
                 list.Add(p);
 
             }
@@ -318,10 +318,22 @@ namespace Attendance.Common
             for (int i = 0; i < list_date.Count; i++)
             {
                 Att oneAtt = FindAttDate(list_att_record_person, list_date[i]);
+               
                 if (oneAtt == null) p.NoAttDay += 1;
                 else
                 {
+                    DateTime basetime = DateTime.Parse($"{list_date[i]} 12:0:0");
                     if (oneAtt.first == oneAtt.last)
+                    {
+                        p.NoAttDay += 0.5;
+                        p.AttDay += 0.5;
+                    }
+                    else if (oneAtt.last < basetime)
+                    {
+                        p.NoAttDay += 0.5;
+                        p.AttDay += 0.5;
+                    }
+                    else if (oneAtt.first > basetime)
                     {
                         p.NoAttDay += 0.5;
                         p.AttDay += 0.5;
@@ -463,14 +475,14 @@ namespace Attendance.Common
             for (int i = 0; i < list_person.Count; i++)
             {
                 if (list_person[i].oa_department_id == null) list_person[i].oa_department_id = "-1";
-                 expression = $"oa_dept_id={list_person[i].oa_department_id}";
+                expression = $"oa_dept_id={list_person[i].oa_department_id}";
                 DataRow[] rows = ds.Tables[0].Select(expression);
-                if (rows.Length>0)
+                if (rows.Length > 0)
                 {
                     list_person[i].Department = rows[0]["oa_dept_path"].ToString();
                 }
             }
-            
+
             list_person.Sort((a, b) => a.Department.CompareTo(b.Department));
             return list_person;
         }
@@ -489,7 +501,7 @@ namespace Attendance.Common
             Person p = new Person();
 
             p.LASTNAME = "";
-            if (uid=="")
+            if (uid == "")
             {
                 return p;
             }
@@ -523,11 +535,11 @@ namespace Attendance.Common
                         p.LOGINID = list_user_rel[i].oa_login_id;
                         p.oa_department_id = list_user_rel[i].oa_department_id;
                     }
-                    
+
                 }
             }
 
-            
+
             ds = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
             where xjsq5={uid} and b.NOWNODETYPE=3 and 
             ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
@@ -798,9 +810,10 @@ namespace Attendance.Common
                 a.first_str = a.first.ToString("HH:mm:ss");
                 a.last_str = a.last.ToString("HH:mm:ss");
                 //a.week = ((int)DateTime.Parse(a.date_day).DayOfWeek).ToString();
+                DateTime basetime = DateTime.Parse($"{a.date_day} 12:0:0");
                 if (a.first == a.last)
                 {
-                    DateTime basetime = DateTime.Parse($"{a.date_day} 12:0:0");
+
                     if (a.first <= basetime)
                     {
                         //a.last = DateTime.Parse($"1900-01-01 0:0:0");
@@ -812,12 +825,20 @@ namespace Attendance.Common
                         a.first_str = "";
                     }
                 }
-  
-                    DateTime first_ok = DateTime.Parse($"{a.date_day} 9:00");
-                    DateTime last_ok = DateTime.Parse($"{a.date_day} 17:00");
-                    if (a.first > first_ok) a.late_tag = true;
-                    if (a.last < last_ok) a.early_tag = true;
-                
+                else if (a.last < basetime)
+                {
+                    a.last_str = "";
+                }
+                else if (a.first > basetime)
+                {
+                    a.first_str = "";
+                }
+
+                DateTime first_ok = DateTime.Parse($"{a.date_day} 9:00");
+                DateTime last_ok = DateTime.Parse($"{a.date_day} 17:00");
+                if (a.first > first_ok) a.late_tag = true;
+                if (a.last < last_ok) a.early_tag = true;
+
             }
             foreach (KeyValuePair<string, Att> item in dicTemp)
             {
