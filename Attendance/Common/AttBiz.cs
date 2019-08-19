@@ -288,7 +288,7 @@ namespace Attendance.Common
             int n = arrUID.Count;
             for (int i = 0; i < n; i++)
             {
-                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip, null);
+                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip, null,null);
                 list.Add(p);
 
             }
@@ -303,9 +303,10 @@ namespace Attendance.Common
             List<string> list_date,
             List<Gongchu> list_gongchu,
             string name,
-            List<UserRel> list_user_rel)
+            List<UserRel> list_user_rel,
+            DataSet dsLeave)
         {
-            Person p = QueryPersonAtt(oa_uid, start_date, end_date, list_trip, list_user_rel);
+            Person p = QueryPersonAtt(oa_uid, start_date, end_date, list_trip, list_user_rel, dsLeave);
             if (p.LASTNAME == null || p.LASTNAME == "") p.LASTNAME = name;
             List<Att> list_att_record_person = new List<Att>();//当前用户的考勤记录
             for (int i = 0; i < list_att_record.Count; i++)
@@ -402,6 +403,9 @@ namespace Attendance.Common
             DBOA dboa = new DBOA();//$@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID where a.id ={ uid}"
             ds = dboa.ExeQuery($@"select a.ID,LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID,a.DEPARTMENTID from 
                                 HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID  where a.MOBILE in({mobile_str})");
+            DataSet dsLeave = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
+                where b.NOWNODETYPE=3 and 
+                ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
             dboa.Close();
             string expression = "";
             List<string> arrOAUID = new List<string>();
@@ -446,12 +450,13 @@ namespace Attendance.Common
             List<Trip> list_trip = QueryTrip(t, null, arrOAUID);
             List<Gongchu> list_gongchu = QueryGongchu("", start_date, end_date);
             List<Person> list_person = new List<Person>();
+            
             for (int i = 0; i < list_user_rel.Count; i++)
             {
                 if (tokenObj.type == "100")
                 {
                     Person p = QueryPersonAtt_2(list_user_rel[i].oa_userid, list_user_rel[i].att_userid, start_date, end_date,
-                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name, list_user_rel);
+                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name, list_user_rel, dsLeave);
                     p.att_userid = list_user_rel[i].att_userid;
                     p.WorkDay = work_day;
                     list_person.Add(p);
@@ -461,7 +466,7 @@ namespace Attendance.Common
                     if (list_user_rel[i].oa_login_id == tokenObj.uid)
                     {
                         Person p = QueryPersonAtt_2(list_user_rel[i].oa_userid, list_user_rel[i].att_userid, start_date, end_date,
-                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name, list_user_rel);
+                   list_trip, list_att_record, list_date, list_gongchu, list_user_rel[i].name, list_user_rel, dsLeave);
                         p.att_userid = list_user_rel[i].att_userid;
                         p.WorkDay = work_day;
                         list_person.Add(p);
@@ -495,7 +500,7 @@ namespace Attendance.Common
             }
             return null;
         }
-        public Person QueryPersonAtt(string uid, string start_date, string end_date, List<Trip> list_trip, List<UserRel> list_user_rel)
+        public Person QueryPersonAtt(string uid, string start_date, string end_date, List<Trip> list_trip, List<UserRel> list_user_rel,DataSet dsLeave)
         {
             DataSet ds = null;
             Person p = new Person();
@@ -538,11 +543,23 @@ namespace Attendance.Common
 
                 }
             }
-
-
-            ds = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
-            where xjsq5={uid} and b.NOWNODETYPE=3 and 
-            ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
+            DataRow[] rows = null;
+            if (dsLeave == null)
+            {
+                ds = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
+                where xjsq5={uid} and b.NOWNODETYPE=3 and 
+                ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
+                rows = ds.Tables[0].Select();
+            }
+            else
+            {
+                //ds.Tables[0].Rows.Clear();
+                rows =   dsLeave.Tables[0].Select($"xjsq5={uid}");
+                //for (int i = 0; i < rows.Length; i++)
+                //{
+                //    ds.Tables[0].Rows.Add(rows[i]);
+                //}
+            }
             Dictionary<int, double> dic = new Dictionary<int, double>();
             dic.Add(0, 0);
             dic.Add(1, 0);
@@ -552,20 +569,20 @@ namespace Attendance.Common
             dic.Add(5, 0);
             dic.Add(6, 0);
             dic.Add(7, 0);
-            int n = ds.Tables[0].Rows.Count;
+            int n = rows.Length;
             for (int i = 0; i < n; i++)
             {
                 DateTime start = DateTime.Parse(start_date);
                 DateTime end = DateTime.Parse(end_date);
 
-                DateTime s = DateTime.Parse(ds.Tables[0].Rows[i]["xjsq10"].ToString());
-                DateTime e = DateTime.Parse(ds.Tables[0].Rows[i]["xjsq17"].ToString());
+                DateTime s = DateTime.Parse(rows[i]["xjsq10"].ToString());
+                DateTime e = DateTime.Parse(rows[i]["xjsq17"].ToString());
 
                 if (s < start) s = start;
                 if (e > end) e = end;
                 TimeSpan timeSpan = e - s;
 
-                int type = StringToInt(ds.Tables[0].Rows[i]["xjsq9"].ToString());
+                int type = StringToInt(rows[i]["xjsq9"].ToString());
                 dic[type] = dic[type] + (timeSpan.Days + 1);
             }
             //0事假 1病假 2婚假 3产假 4丧假 5年休假 6其他 7陪产假
