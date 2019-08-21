@@ -766,7 +766,7 @@ namespace Attendance.Common
                 DataSet dsoa = dboa.ExeQuery($@"select a.*,b.LASTNAME,b.MOBILE,c.NOWNODETYPE from 
                                     (formtable_main_555 a left join  HRMRESOURCE b on (a.OWNER=b.id) ) 
                                     left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
-								    where c.NOWNODETYPE=3 and date_time_gc>='{dd.ToString("yyyy-MM-dd")}' and date_time_gc<='{dd.AddDays(Days).ToString("yyyy-MM-dd")}' 
+								    where  date_time_gc>='{dd.ToString("yyyy-MM-dd")}' and date_time_gc<='{dd.AddDays(Days).ToString("yyyy-MM-dd")}' 
                                     and b.LOGINID = '{oa_login_id}' order by b.LASTNAME ASC");
                 dboa.Close();
                 for (int i = 0; i < dsoa.Tables[0].Rows.Count; i++)
@@ -777,6 +777,7 @@ namespace Attendance.Common
                     if (dic_gongchu.Keys.Contains(date) == false)
                     {
                         Gongchu g = new Gongchu();
+                        g.NOWNODETYPE = int.Parse(dsoa.Tables[0].Rows[i]["NOWNODETYPE"].ToString());
                         g.memo = dsoa.Tables[0].Rows[i]["REASON"].ToString();
                         if (range == "0")
                         {
@@ -793,6 +794,7 @@ namespace Attendance.Common
                             g.day_count = 1;
                             g.range = "全天";
                         }
+                        if(g.NOWNODETYPE!=3) g.range = $"[审批中]";
                         dic_gongchu.Add(date, g);
                     }
                     else
@@ -808,10 +810,21 @@ namespace Attendance.Common
             for (int i = 0; i < Days; i++)
             {
                 string key = dd.ToString("yyyy-MM-dd");
+               
                 Att a = new Att();
+                a.is_holiday = IsHolidayByDate(dd);
                 a.date_day = key;
+                a.first_str = "";
+                a.last_str = "";
                 a.week = GetWeekString((int)dd.DayOfWeek);
-                if (dic_gongchu.Keys.Contains(key)) a.gongchu = $"{dic_gongchu[key].day_count}:{dic_gongchu[key].range}-{dic_gongchu[key].memo}";
+               
+                if (dic_gongchu.Keys.Contains(key))
+                {
+                    Gongchu g = dic_gongchu[key];
+                    a.range = g.range;
+                    a.memo = g.memo;
+                    a.gongchu = g.day_count.ToString();
+                }
                 dicTemp.Add(key, a);
                 dd = dd.AddDays(1);
             }

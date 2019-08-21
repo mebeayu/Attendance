@@ -22,29 +22,29 @@
             <a id="pro"></a>
         </div>
         @*<table id="dg" class="easyui-datagrid" style="width:100%;height:20%;text-align:center"
-               data-options="singleSelect:true,collapsible:false,toolbar:'#tb1'" rownumbers="false" pagination="false">
-            <thead>
-                <tr>
-                    <th data-options="field:'LASTNAME',resizable:true" width="80px">姓名</th>
-                    <th data-options="field:'MOBILE',resizable:true" width="120px">手机</th>
-                    <th data-options="field:'Department',resizable:true" width="120px">部门</th>
-                    <th data-options="field:'WorkDay',resizable:true" width="60px">应勤</th>
-                    <th data-options="field:'AttDay',resizable:true" width="60px">实勤</th>
-                    <th data-options="field:'LateCount',resizable:true,formatter:formatNum" width="60px">迟到</th>
-                    <th data-options="field:'EarlyCount',resizable:true,formatter:formatNum" width="60px">早退</th>
-                    <th data-options="field:'Trip',resizable:true,formatter:formatNum" width="60px">出差</th>
-                    <th data-options="field:'Leave0',resizable:true,formatter:formatNum" width="60px">事假</th>
-                    <th data-options="field:'Leave1',resizable:true,formatter:formatNum" width="60px">病假</th>
-                    <th data-options="field:'Leave2',resizable:true,formatter:formatNum" width="60px">婚假</th>
-                    <th data-options="field:'Leave3',resizable:true,formatter:formatNum" width="60px">产假</th>
-                    <th data-options="field:'Leave4',resizable:true,formatter:formatNum" width="60px">丧假</th>
-                    <th data-options="field:'Leave5',resizable:true,formatter:formatNum" width="60px">年休假</th>
-                    <th data-options="field:'Leave7',resizable:true,formatter:formatNum" width="60px">陪产假</th>
-                    <th data-options="field:'Leave6',resizable:true,formatter:formatNum" width="60px">其他</th>
-                </tr>
-            </thead>
-        </table>*@
-        
+                   data-options="singleSelect:true,collapsible:false,toolbar:'#tb1'" rownumbers="false" pagination="false">
+                <thead>
+                    <tr>
+                        <th data-options="field:'LASTNAME',resizable:true" width="80px">姓名</th>
+                        <th data-options="field:'MOBILE',resizable:true" width="120px">手机</th>
+                        <th data-options="field:'Department',resizable:true" width="120px">部门</th>
+                        <th data-options="field:'WorkDay',resizable:true" width="60px">应勤</th>
+                        <th data-options="field:'AttDay',resizable:true" width="60px">实勤</th>
+                        <th data-options="field:'LateCount',resizable:true,formatter:formatNum" width="60px">迟到</th>
+                        <th data-options="field:'EarlyCount',resizable:true,formatter:formatNum" width="60px">早退</th>
+                        <th data-options="field:'Trip',resizable:true,formatter:formatNum" width="60px">出差</th>
+                        <th data-options="field:'Leave0',resizable:true,formatter:formatNum" width="60px">事假</th>
+                        <th data-options="field:'Leave1',resizable:true,formatter:formatNum" width="60px">病假</th>
+                        <th data-options="field:'Leave2',resizable:true,formatter:formatNum" width="60px">婚假</th>
+                        <th data-options="field:'Leave3',resizable:true,formatter:formatNum" width="60px">产假</th>
+                        <th data-options="field:'Leave4',resizable:true,formatter:formatNum" width="60px">丧假</th>
+                        <th data-options="field:'Leave5',resizable:true,formatter:formatNum" width="60px">年休假</th>
+                        <th data-options="field:'Leave7',resizable:true,formatter:formatNum" width="60px">陪产假</th>
+                        <th data-options="field:'Leave6',resizable:true,formatter:formatNum" width="60px">其他</th>
+                    </tr>
+                </thead>
+            </table>*@
+
         <table id="dg1" class="easyui-datagrid" style="width:100%;height:95%;text-align:center"
                data-options="singleSelect:true,collapsible:false,toolbar:'#tb1'" rownumbers="true" pagination="false">
             <thead>
@@ -55,7 +55,8 @@
                     <th data-options="field:'mobile',resizable:true" width="100px">电话</th>
                     <th data-options="field:'first_str',resizable:true,formatter:formatTagLate" width="100px">上午打卡时间</th>
                     <th data-options="field:'last_str',resizable:true,formatter:formatTagEarly" width="100px">下午打卡时间</th>
-                    <th data-options="field:'gongchu',resizable:true" width="160px">已批准公出</th>
+                    <th data-options="field:'range',resizable:true,formatter:formatTagGongchu" width="100px">已批准公出</th>
+                    <th data-options="field:'memo',resizable:true" width="240px">公出原因</th>
                 </tr>
             </thead>
         </table>
@@ -66,6 +67,55 @@
             <input id="attYearMonth" onclick="setmonth(this)" readonly="readonly" type="text">
             <a id="btn_see" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:200px" onclick="GetPersonAtt()">查看我的打卡记录</a>
         </form>
+
+    </div>
+    @*公出表单*@
+    <div id="dlg_form" class="easyui-dialog" title="公出审批表" data-options="modal:true,iconCls:'icon-doc',closed: true" style="width:510px;height:260px;padding:10px">
+        <a id="pro1"></a>
+        <table width="100%">
+            <tr>
+                <td width="100">人员类型</td>
+                <td >
+                    <select id="person_type">
+                        <option value="0">普通员工</option>
+                        <option value="1">部门经理</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>公出日期</td>
+                <td>
+                    <input id="date_time_gc" type="text" readonly />
+                </td>
+            </tr>
+            <tr>
+                <td>时间范围</td>
+                <td>
+                    <select id="range">
+                        <option value="0">上午</option>
+                        <option value="1">下午</option>
+                        <option value="2">全天</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>公出事由</td>
+                <td>
+                    <input id="reason" type="text" style="width:300px" />
+                </td>
+            </tr>
+            <tr>
+                <td>地点</td>
+                <td>
+                    <input id="addrss" type="text" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <a  id="btn_push" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:90%" onclick="submit_oa()">提交审批</a>
+                </td>
+            </tr>
+        </table>
 
     </div>
 </body>

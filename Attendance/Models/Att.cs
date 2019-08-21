@@ -19,5 +19,8 @@ namespace Attendance.Models
         public string gongchu { get; set; }
         public bool late_tag { get; set; } 
         public bool early_tag { get; set; }
+        public bool is_holiday { get; set; }
+        public string range { get; set; }
+        public string memo { get; set; }
     }
 }

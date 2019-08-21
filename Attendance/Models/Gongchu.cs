@@ -14,6 +14,7 @@ namespace Attendance.Models
         public double day_count { get; set; }
         public string memo { get; set; }
         public string range { get; set; }
+        public int NOWNODETYPE { get; set; }
     }
     public class GongchuRequest
     {

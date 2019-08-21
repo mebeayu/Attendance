@@ -46,6 +46,72 @@ function GetPersonAtt() {
         dataType: "json"
     });
 }
+function formatTagGongchu(val, row, rowIndex) {
+    //console.log(rowIndex);
+    if (row.is_holiday === false && val === null && (row.first_str===""||row.last_str==="")) {
+        return "<a title='发起公出申请审批' onclick=pushOS('" + row.date_day + "','" + rowIndex+"')>" + "<img src='/Img/application_form_add.png'/>" + "</a>";
+    }
+    else {
+        return val;
+    }
+}
+var SelrowIndex = -1;
+function pushOS(date, rowIndex) {
+    //console.log(rowIndex);
+
+    
+    SelrowIndex = rowIndex;
+    $("#date_time_gc").val(date);
+    $('#dlg_form').dialog('open');
+}
+function submit_oa() {
+
+    var person_type = $("#person_type").val();
+    var date_time_gc = $("#date_time_gc").val();
+    var range = $("#range").val();
+    var reason = $("#reason").val();
+    var addrss = $("#addrss").val();
+
+    if (reason === "" || date_time_gc === "" || addrss === "") {
+        alert("请正确填写原因、日期、地点信息");
+        return;
+    }
+    var request_data = { Token: Token, person_type: person_type, date_time_gc: date_time_gc, range: range, reason: reason, addrss: addrss };
+    //console.log(request_data);
+    $("#pro1").html("<img src='/img/loading.gif' width=24 heigth=24>");
+    $("#btn_push").linkbutton("disable");
+    //console.log(request_data);
+    var url = "/API/APIAtt/PushGongchuForm";
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: request_data,
+        success: function (data) {
+            if (data.error_code === 0) {
+
+                var rows = $('#dg1').datagrid("getRows");
+                rows[SelrowIndex]["range"] = "[审批中]";
+                rows[SelrowIndex]["memo"] = reason;
+                $('#dg1').datagrid('refreshRow', SelrowIndex);
+                $("#pro1").html("");
+                alert("已提交到OA");
+                $('#dlg_form').dialog('close');
+            }
+            else {
+                alert(data.error_code + data.message);
+                $("#pro1").html("");
+
+            }
+            $("#btn_push").linkbutton("enable")
+        },
+        error: function () {
+            alert("服务器错误");
+            $("#pro1").html("");
+            $("#btn_push").linkbutton("enable")
+        },
+        dataType: "json"
+    });
+}
 function formatTagLate(val, row) {
     //console.log(row);
     if (row.late_tag === true) return  "<span style='background: orangered'>" + val+"</span>";

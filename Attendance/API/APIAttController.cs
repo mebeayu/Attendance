@@ -15,6 +15,8 @@ using System.Web.Http;
 using System.Web;
 using System.IO;
 using System.Data.SqlClient;
+using WorkflowService.Models;
+using WorkflowService;
 
 namespace Attendance.API
 {
@@ -437,6 +439,41 @@ namespace Attendance.API
             data.data = d;
             return data;
 
+        }
+        [HttpPost]
+        [ActionName("PushGongchuForm")]
+        public DataResult PushGongchuForm([FromBody]GongchuForm obj)
+        {
+            TokenObj tokenObj = CheckToken(obj.Token, out code);
+            if (code != MessageCode.SUCCESS)
+            {
+                return DataResult.InitFromMessageCode(code);
+            }
+            DBOA db = new DBOA();
+            DataSet ds = db.ExeQuery($@"select * from HRMRESOURCE where LOGINID='{tokenObj.uid}'");
+            db.Close();
+            if (ds.Tables[0].Rows.Count==0)
+            {
+                return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
+            }
+            obj.owner = ds.Tables[0].Rows[0]["ID"].ToString();
+            obj.name = ds.Tables[0].Rows[0]["LASTNAME"].ToString();
+            obj.com = ds.Tables[0].Rows[0]["SUBCOMPANYID1"].ToString();
+            obj.dpt = ds.Tables[0].Rows[0]["DEPARTMENTID"].ToString();
+            int res = OAService.PushGongchu(obj);
+            DataResult data = null;
+            if (res>0)
+            {
+                data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+                data.data = res;
+            }
+            else
+            {
+                data = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
+                data.data = res;
+                data.message = "推送OA失败";
+            }
+            return data;
         }
         public string TranLeaveType(int type)
         {
