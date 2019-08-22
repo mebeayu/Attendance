@@ -71,7 +71,15 @@ function submit_oa() {
     var range = $("#range").val();
     var reason = $("#reason").val();
     var addrss = $("#addrss").val();
+    if (person_type==="-") {
+        alert("请选择人员类型");
+        return;
+    }
 
+    if (range === "-") {
+        alert("请选择公出的时间范围");
+        return;
+    }
     if (reason === "" || date_time_gc === "" || addrss === "") {
         alert("请正确填写原因、日期、地点信息");
         return;
