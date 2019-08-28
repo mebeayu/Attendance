@@ -22,6 +22,7 @@ namespace Attendance.API
 {
     public class APIAttController : ApiController
     {
+        
         int code = 0;
         private static Dictionary<string, string> tokenCache = new Dictionary<string, string>();
         public static string MakeToken(string oa_logid, string psw, string type, string department_id)
@@ -238,9 +239,9 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            AttBiz attbiz = new AttBiz();
-            List<LeaveQuest> list = attbiz.QueryLeave(obj, tokenObj);
-            attbiz.Close();
+            
+            List<LeaveQuest> list = AttBiz.QueryLeave(obj, tokenObj);
+           
             int n = list.Count;
             for (int i = 0; i < n; i++)
             {
@@ -259,9 +260,9 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            AttBiz attbiz = new AttBiz();
-            List<Trip> list = attbiz.QueryTrip(obj, tokenObj);
-            attbiz.Close();
+            //AttBiz attbiz = new AttBiz();
+            List<Trip> list = AttBiz.QueryTrip(obj, tokenObj);
+            //attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = list;
             return data;
@@ -270,49 +271,50 @@ namespace Attendance.API
         [ActionName("QueryAttList")]
         public DataResult QueryAttList([FromBody]Person obj)
         {
-            TokenObj tokenObj = CheckToken(obj.Token, out code);
-            if (code != MessageCode.SUCCESS)
-            {
-                return DataResult.InitFromMessageCode(code);
-            }
-            AttBiz attbiz = new AttBiz();
-            Trip t = new Trip();
-            t.StartDate = obj.StartDate;
-            t.EndDate = obj.EndDate;
-            t.UID = obj.UID;
-            t.LASTNAME = "";
-            List<Trip> list_trip = attbiz.QueryTrip(t);
-            List<string> arrUID = new List<string>();
-            if (tokenObj.type == "0")
-            {
-                string oa_id = attbiz.GetOAUIDByLoginID(tokenObj.uid);
-                if (oa_id != null) arrUID.Add(oa_id);
-            }
-            else
-            {
-               arrUID = attbiz.GetUIDinDate(obj.StartDate, obj.EndDate, list_trip);
-            }
-            List<Person> list = attbiz.QueryAttList(arrUID, obj.StartDate, obj.EndDate, list_trip);
-            attbiz.AddLog(tokenObj.uid, "获取出差休假报表");
-            attbiz.Close();
-            DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
-            data.data = list;
-            return data;
+            //TokenObj tokenObj = CheckToken(obj.Token, out code);
+            //if (code != MessageCode.SUCCESS)
+            //{
+            //    return DataResult.InitFromMessageCode(code);
+            //}
+            //AttBiz attbiz = new AttBiz();
+            //Trip t = new Trip();
+            //t.StartDate = obj.StartDate;
+            //t.EndDate = obj.EndDate;
+            //t.UID = obj.UID;
+            //t.LASTNAME = "";
+            //List<Trip> list_trip = AttBiz.QueryTrip(t);
+            //List<string> arrUID = new List<string>();
+            //if (tokenObj.type == "0")
+            //{
+            //    string oa_id = attbiz.GetOAUIDByLoginID(tokenObj.uid);
+            //    if (oa_id != null) arrUID.Add(oa_id);
+            //}
+            //else
+            //{
+            //   arrUID = attbiz.GetUIDinDate(obj.StartDate, obj.EndDate, list_trip);
+            //}
+            //List<Person> list = attbiz.QueryAttList(arrUID, obj.StartDate, obj.EndDate, list_trip);
+            //attbiz.AddLog(tokenObj.uid, "获取出差休假报表");
+            //attbiz.Close();
+            //DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            //data.data = list;
+            //return data;
+            return null;
         }
 
         [HttpPost]
         [ActionName("QueryPerson")]
         public DataResult QueryPerson([FromBody]Person obj)
         {
-            AttBiz attbiz = new AttBiz();
+            //AttBiz attbiz = new AttBiz();
             Trip t = new Trip();
             t.StartDate = obj.StartDate;
             t.EndDate = obj.EndDate;
             t.UID = obj.UID;
             t.LASTNAME = "";
-            List<Trip> list = attbiz.QueryTrip(t);
-            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list,null,null);
-            attbiz.Close();
+            List<Trip> list = AttBiz.QueryTrip(t);
+            Person p = AttBiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list,null,null);
+           
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = p;
             return data;
@@ -406,23 +408,28 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            AttBiz attbiz = new AttBiz();
+            
             Trip t = new Trip();
             t.StartDate = obj.StartDate;
             t.EndDate = obj.EndDate;
             t.UID = obj.UID;
             t.LASTNAME = "";
-            List<Trip> list_trip = attbiz.QueryTrip(t);
+            List<Trip> list_trip = AttBiz.list_trip_cache;
+            if (list_trip == null)
+            {
+                list_trip = AttBiz.QueryTrip(t);
+            }
+
             LeaveQuest leaveObj = new LeaveQuest();
             leaveObj.LASTNAME = obj.LASTNAME;
             leaveObj.StartDate = obj.StartDate;
             leaveObj.EndDate = obj.EndDate;
-            List<LeaveQuest> list_leave = attbiz.QueryLeave(leaveObj);
+            List<LeaveQuest> list_leave = AttBiz.QueryLeave(leaveObj);
             List<Trip> list_trip_one = new List<Trip>();
 
             List<Att> list_att = new List<Att>();
-            if (obj.att_userid!=null&& obj.att_userid != "") list_att = AttBiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7),tokenObj.uid);
-            attbiz.Close();
+            if (obj.att_userid!=null&& obj.att_userid != "") list_att = AttBiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7),obj.LOGINID);
+           
             for (int i = 0; i < list_trip.Count; i++)
             {
                 if (list_trip[i].UID == obj.UID) list_trip_one.Add(list_trip[i]);

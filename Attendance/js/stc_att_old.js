@@ -73,6 +73,8 @@ function Stc_Att() {
     //    alert("请选择上传文件");
     //    return;
     //}
+    $("#btn_stc").linkbutton("disable");
+    
     var start_date = $("#start_date").val();
     var end_date = $("#end_date").val();
     var request_data = { Token: Token, start_date: start_date, end_date: end_date };
@@ -94,10 +96,12 @@ function Stc_Att() {
                 $("#pro").html("");
 
             }
+            $("#btn_stc").linkbutton("enable")
         },
         error: function () {
             alert("服务器错误");
             $("#pro").html("");
+            $("#btn_stc").linkbutton("enable")
         },
         dataType: "json"
     });

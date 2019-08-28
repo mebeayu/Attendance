@@ -10,6 +10,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -18,6 +20,7 @@ namespace Attendance.Common
 {
     public class AttBiz
     {
+        public static List<Trip> list_trip_cache = null;
         DBOA dboa;
         //private static Dictionary<string, List<Trip>> cacheTripList;
         public AttBiz()
@@ -89,8 +92,9 @@ namespace Attendance.Common
             }
             return list;
         }
-        public List<LeaveQuest> QueryLeave(LeaveQuest obj, TokenObj tokenObj = null)
+        public static List<LeaveQuest> QueryLeave(LeaveQuest obj, TokenObj tokenObj = null)
         {
+            DBOA _dboa = new DBOA();
             if (obj.LASTNAME == null)
             {
                 obj.LASTNAME = "";
@@ -98,7 +102,7 @@ namespace Attendance.Common
             DataSet ds = null;
             if (tokenObj == null || tokenObj.type != "0")
             {
-                ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+                ds = _dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
                 (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
@@ -107,14 +111,14 @@ namespace Attendance.Common
             }
             else
             {
-                ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+                ds = _dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
                 (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
                 b.LOGINID =:LOGINID and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
                 new OracleParameter("LOGINID", tokenObj.uid));
             }
-
+            _dboa.Close();
             int n = ds.Tables[0].Rows.Count;
             List<LeaveQuest> list = new List<LeaveQuest>();
             for (int i = 0; i < n; i++)
@@ -154,8 +158,9 @@ namespace Attendance.Common
             return list;
         }
 
-        public List<Trip> QueryTrip(Trip obj, TokenObj tokenObj = null, List<string> arrOAID = null)
+        public static List<Trip> QueryTrip(Trip obj, TokenObj tokenObj = null, List<string> arrOAID = null)
         {
+            DBOA _dboa = new DBOA();
             if (obj.LASTNAME == null)
             {
                 obj.LASTNAME = "";
@@ -167,7 +172,7 @@ namespace Attendance.Common
             {
                 if (tokenObj == null || tokenObj.type != "0")
                 {
-                    ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                    ds = _dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
@@ -176,7 +181,7 @@ namespace Attendance.Common
                 }
                 else
                 {
-                    ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                    ds = _dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
@@ -188,13 +193,14 @@ namespace Attendance.Common
             else
             {
                 string OAID = string.Join(",", arrOAID);
-                ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                ds = _dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
                 b.ID in({OAID}) and c.NOWNODETYPE=3 order by b.LASTNAME ASC");
             }
-
+            DataSet ds1 = _dboa.ExeQuery($@"select ID,LASTNAME,MOBILE from HRMRESOURCE");
+            _dboa.Close();
             int n = ds.Tables[0].Rows.Count;
             List<Trip> list = new List<Trip>();
             for (int i = 0; i < n; i++)
@@ -228,15 +234,17 @@ namespace Attendance.Common
                 //}
                 string strIDS = ds.Tables[0].Rows[i]["CC8"].ToString();
                 string[] arrIDs = strIDS.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+               
                 for (int j = 0; j < arrIDs.Length; j++)
                 {
                     //if (arrIDs[j] == trip.UID) continue;
                     Trip trip1 = new Trip();
                     trip1.UID = arrIDs[j];
 
-                    DataSet ds1 = dboa.ExeQuery($@"select LASTNAME,MOBILE from HRMRESOURCE where id={trip1.UID}");
-                    trip1.MOBILE = ds1.Tables[0].Rows[0][1].ToString();
-                    trip1.LASTNAME = ds1.Tables[0].Rows[0][0].ToString();
+                    //DataSet ds1 = dboa.ExeQuery($@"select LASTNAME,MOBILE from HRMRESOURCE where id={trip1.UID}");
+                    DataRow[] Rows = ds1.Tables[0].Select($"ID={trip1.UID}");
+                    trip1.MOBILE = Rows[0]["MOBILE"].ToString();
+                    trip1.LASTNAME = Rows[0]["LASTNAME"].ToString();
                     trip1.Title = trip.Title;
                     trip1.Path = trip.Path;
                     trip1.REQUESTID = trip.REQUESTID;
@@ -288,7 +296,7 @@ namespace Attendance.Common
             int n = arrUID.Count;
             for (int i = 0; i < n; i++)
             {
-                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip, null,null);
+                Person p = QueryPersonAtt(arrUID[i], start_date, end_date, list_trip, null, null);
                 list.Add(p);
 
             }
@@ -319,7 +327,7 @@ namespace Attendance.Common
             for (int i = 0; i < list_date.Count; i++)
             {
                 Att oneAtt = FindAttDate(list_att_record_person, list_date[i]);
-               
+
                 if (oneAtt == null) p.NoAttDay += 1;
                 else
                 {
@@ -447,10 +455,12 @@ namespace Attendance.Common
             t.EndDate = end_date;
             t.UID = "";
             t.LASTNAME = "";
+
             List<Trip> list_trip = QueryTrip(t, null, arrOAUID);
+            list_trip_cache = list_trip;
             List<Gongchu> list_gongchu = QueryGongchu("", start_date, end_date);
             List<Person> list_person = new List<Person>();
-            
+
             for (int i = 0; i < list_user_rel.Count; i++)
             {
                 if (tokenObj.type == "100")
@@ -500,8 +510,9 @@ namespace Attendance.Common
             }
             return null;
         }
-        public Person QueryPersonAtt(string uid, string start_date, string end_date, List<Trip> list_trip, List<UserRel> list_user_rel,DataSet dsLeave)
+        public static Person QueryPersonAtt(string uid, string start_date, string end_date, List<Trip> list_trip, List<UserRel> list_user_rel, DataSet dsLeave)
         {
+            DBOA dboa = new DBOA();
             DataSet ds = null;
             Person p = new Person();
 
@@ -554,12 +565,13 @@ namespace Attendance.Common
             else
             {
                 //ds.Tables[0].Rows.Clear();
-                rows =   dsLeave.Tables[0].Select($"xjsq5={uid}");
+                rows = dsLeave.Tables[0].Select($"xjsq5={uid}");
                 //for (int i = 0; i < rows.Length; i++)
                 //{
                 //    ds.Tables[0].Rows.Add(rows[i]);
                 //}
             }
+            dboa.Close();
             Dictionary<int, double> dic = new Dictionary<int, double>();
             dic.Add(0, 0);
             dic.Add(1, 0);
@@ -742,6 +754,7 @@ namespace Attendance.Common
         }
         public static List<Att> GetPersonAtt(string att_uid, string Month, string oa_login_id)
         {
+           
             DBAtt130 db = new DBAtt130();
             DataSet ds = db.ExeQuery($@"SELECT
 	                                    a.NAME,a.USERID,a.PAGER, 
@@ -759,6 +772,9 @@ namespace Attendance.Common
             List<Att> list = new List<Att>();
             DateTime dd = DateTime.Parse($"{Month}-01");
             int Days = DateTime.DaysInMonth(dd.Year, dd.Month);
+
+            
+
             Dictionary<string, Gongchu> dic_gongchu = new Dictionary<string, Gongchu>();
             if (ds.Tables[0].Rows.Count > 0)
             {
@@ -794,7 +810,7 @@ namespace Attendance.Common
                             g.day_count = 1;
                             g.range = "全天";
                         }
-                        if(g.NOWNODETYPE!=3) g.range = $"[审批中]";
+                        if (g.NOWNODETYPE != 3) g.range = $"[审批中]";
                         dic_gongchu.Add(date, g);
                     }
                     else
@@ -810,14 +826,14 @@ namespace Attendance.Common
             for (int i = 0; i < Days; i++)
             {
                 string key = dd.ToString("yyyy-MM-dd");
-               
+
                 Att a = new Att();
                 a.is_holiday = IsHolidayByDate(dd);
                 a.date_day = key;
                 a.first_str = "";
                 a.last_str = "";
                 a.week = GetWeekString((int)dd.DayOfWeek);
-               
+
                 if (dic_gongchu.Keys.Contains(key))
                 {
                     Gongchu g = dic_gongchu[key];
@@ -904,7 +920,7 @@ namespace Attendance.Common
                 return 0;
             }
         }
-        private int StringToInt(string num)
+        private static int StringToInt(string num)
         {
             try
             {
@@ -933,43 +949,97 @@ namespace Attendance.Common
             try
             {
                 var day = date.DayOfWeek;
-                string jsonData = $"{{ \"d\", {date.ToString("yyyyMMdd")} }}";//参数
+                string param = date.ToString("yyyyMMdd");
                 //判断是否为周末
                 if (day == DayOfWeek.Sunday || day == DayOfWeek.Saturday)
                     return true;
 
-                ////0为工作日，1为周末，2为法定节假日
-                //ServicePointManager.Expect100Continue = false;
-                //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://tool.bitefu.net/jiari/");
-                //request.ServicePoint.Expect100Continue = false;//指定此属性为false
-                //request.Method = "POST";
-                //request.ContentType = "application/json";
-                //Stream requestStream = request.GetRequestStream();
-                //StreamWriter streamWriter = new StreamWriter(requestStream, Encoding.GetEncoding("utf-8"));
-                //streamWriter.Write(jsonData);
-                //streamWriter.Flush();
-                //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                //Stream responseStream = response.GetResponseStream();
-                //StreamReader streamReader = new StreamReader(responseStream, Encoding.GetEncoding("utf-8"));
-                ////获取响应内容
-                //using (StreamReader reader = new StreamReader(responseStream, Encoding.UTF8))
-                //{
-                //    string result = reader.ReadToEnd();
-                //    if (result == "1" || result == "2") isHoliday = true;
-                //}
-
-
-
-                //var byteResult = await webClient.UploadValuesTaskAsync("http://tool.bitefu.net/jiari/", "POST", PostVars);//请求地址,传参方式,参数集合
-                // var result = Encoding.UTF8.GetString(byteResult);//获取返回值
-                // if (result == "1" || result == "2")
-                //     isHoliday = true;
+                ////0为工作日，1为周末，2为法定节假日http://tool.bitefu.net/jiari/?d=20190913
+                string res = Get("http://tool.bitefu.net/jiari/?d=" + param);
+                if (res=="1"||res=="2")
+                {
+                    return true;
+                }
             }
             catch
             {
                 isHoliday = false;
             }
             return isHoliday;
+        }
+        public static string Get(string url)
+        {
+            System.GC.Collect();
+            string result = "";
+
+            HttpWebRequest request = null;
+            HttpWebResponse response = null;
+
+            //请求url以获取数据
+            try
+            {
+                //设置最大连接数
+                ServicePointManager.DefaultConnectionLimit = 200;
+                //设置https验证方式
+                if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    ServicePointManager.ServerCertificateValidationCallback =
+                            new RemoteCertificateValidationCallback(CheckValidationResult);
+                }
+
+                /***************************************************************
+                * 下面设置HttpWebRequest的相关属性
+                * ************************************************************/
+                request = (HttpWebRequest)WebRequest.Create(url);
+
+                request.Method = "GET";
+
+                //设置代理
+                //WebProxy proxy = new WebProxy();
+                //proxy.Address = new Uri(WxPayConfig.PROXY_URL);
+                //request.Proxy = proxy;
+
+                //获取服务器返回
+                response = (HttpWebResponse)request.GetResponse();
+
+                //获取HTTP返回数据
+                StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
+                result = sr.ReadToEnd().Trim();
+                sr.Close();
+            }
+            catch (System.Threading.ThreadAbortException e)
+            {
+
+                System.Threading.Thread.ResetAbort();
+                return "";
+            }
+            catch (WebException e)
+            {
+                return "";
+            }
+            catch (Exception e)
+            {
+                return "";
+            }
+            finally
+            {
+                //关闭连接和流
+                if (response != null)
+                {
+                    response.Close();
+                }
+                if (request != null)
+                {
+                    request.Abort();
+                }
+            }
+            return result;
+        }
+        public static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        {
+            //直接确认，否则打不开    
+            return true;
+
         }
     }
 }
