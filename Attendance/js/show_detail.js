@@ -16,9 +16,10 @@ function GetPersonAtt() {
         return;
     }
     $("#pro").html("<img src='/img/loading.gif' width=24 heigth=24>");
-    var request_data = { Token: Token, LOGINID: uid, Month: month };
+    var is_show_all = $("#is_show_all").is(':checked');
+    var request_data = { Token: Token, LOGINID: uid, Month: month, is_show_all: is_show_all };
     $("#btn_see").linkbutton("disable");
-    //console.log(request_data);
+    console.log(request_data);
     var url = "/API/APIAtt/GetPersonAtt";
     $.ajax({
         type: 'POST',

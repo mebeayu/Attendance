@@ -38,13 +38,13 @@ namespace Attendance.Common
             if (ds.Tables[0].Rows.Count > 0) return ds.Tables[0].Rows[0][0].ToString();
             else return null;
         }
-        public static List<Gongchu> QueryGongchu(string Name, string StartDate, string EndDate, TokenObj tokenObj = null)
+        public  List<Gongchu> QueryGongchu(string Name, string StartDate, string EndDate, TokenObj tokenObj = null)
         {
             if (Name == null)
             {
                 Name = "";
             }
-            DBOA dboa = new DBOA();
+           
             DataSet ds = null;
             if (tokenObj == null || tokenObj.type != "0")
             {
@@ -62,7 +62,7 @@ namespace Attendance.Common
 								    where c.NOWNODETYPE=3 and date_time_gc>='{StartDate}' and date_time_gc<='{EndDate}' 
                                     and b.LOGINID = '{tokenObj.uid}' order by b.LASTNAME ASC");
             }
-            dboa.Close();
+            
             List<Gongchu> list = new List<Gongchu>();
             Dictionary<string, Gongchu> tempDic = new Dictionary<string, Gongchu>();
             for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
@@ -92,9 +92,9 @@ namespace Attendance.Common
             }
             return list;
         }
-        public static List<LeaveQuest> QueryLeave(LeaveQuest obj, TokenObj tokenObj = null)
+        public  List<LeaveQuest> QueryLeave(LeaveQuest obj, TokenObj tokenObj = null)
         {
-            DBOA _dboa = new DBOA();
+            
             if (obj.LASTNAME == null)
             {
                 obj.LASTNAME = "";
@@ -102,7 +102,7 @@ namespace Attendance.Common
             DataSet ds = null;
             if (tokenObj == null || tokenObj.type != "0")
             {
-                ds = _dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+                ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
                 (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
@@ -111,14 +111,14 @@ namespace Attendance.Common
             }
             else
             {
-                ds = _dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
+                ds = dboa.ExeQuery($@"SELECT b.LASTNAME,b.MOBILE,xjsq5,xjsq19,xjsq9,xjsq10,xjsq17,c.NOWNODETYPE from 
                 (formtable_main_242 a left join HRMRESOURCE b on b.ID=a.xjsq5) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((xjsq10>='{obj.StartDate}' and xjsq10<='{obj.EndDate}') or (xjsq17>='{obj.StartDate}' and xjsq17<='{obj.EndDate}')) and 
                 b.LOGINID =:LOGINID and c.NOWNODETYPE=3 order by b.LASTNAME ASC",
                 new OracleParameter("LOGINID", tokenObj.uid));
             }
-            _dboa.Close();
+            
             int n = ds.Tables[0].Rows.Count;
             List<LeaveQuest> list = new List<LeaveQuest>();
             for (int i = 0; i < n; i++)
@@ -147,6 +147,8 @@ namespace Attendance.Common
 
                 DateTime s = DateTime.Parse(row.xjsq10);
                 DateTime e = DateTime.Parse(row.xjsq17);
+                row._StartDate = s;
+                row._EndDate = e;
                 if (s < start) s = start;
                 if (e > end) e = end;
                 TimeSpan timeSpan = e - s;
@@ -158,9 +160,9 @@ namespace Attendance.Common
             return list;
         }
 
-        public static List<Trip> QueryTrip(Trip obj, TokenObj tokenObj = null, List<string> arrOAID = null)
+        public  List<Trip> QueryTrip(Trip obj, TokenObj tokenObj = null, List<string> arrOAID = null)
         {
-            DBOA _dboa = new DBOA();
+            
             if (obj.LASTNAME == null)
             {
                 obj.LASTNAME = "";
@@ -172,7 +174,7 @@ namespace Attendance.Common
             {
                 if (tokenObj == null || tokenObj.type != "0")
                 {
-                    ds = _dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                    ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
@@ -181,7 +183,7 @@ namespace Attendance.Common
                 }
                 else
                 {
-                    ds = _dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                    ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
@@ -193,14 +195,14 @@ namespace Attendance.Common
             else
             {
                 string OAID = string.Join(",", arrOAID);
-                ds = _dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
+                ds = dboa.ExeQuery($@"select b.LASTNAME,b.MOBILE,c.NOWNODETYPE,a.* from  
                 (formtable_main_45 a left join  HRMRESOURCE b on (a.JBR=b.id) ) 
                 left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
                 where ((CC4>='{obj.StartDate}' and CC4<='{obj.EndDate}') or (CC5>='{obj.StartDate}' and CC5<='{obj.EndDate}')) and 
                 b.ID in({OAID}) and c.NOWNODETYPE=3 order by b.LASTNAME ASC");
             }
-            DataSet ds1 = _dboa.ExeQuery($@"select ID,LASTNAME,MOBILE from HRMRESOURCE");
-            _dboa.Close();
+            DataSet ds1 = dboa.ExeQuery($@"select ID,LOGINID,LASTNAME,MOBILE from HRMRESOURCE");
+            
             int n = ds.Tables[0].Rows.Count;
             List<Trip> list = new List<Trip>();
             for (int i = 0; i < n; i++)
@@ -219,7 +221,8 @@ namespace Attendance.Common
 
                 DateTime s = DateTime.Parse(trip.StartDate);
                 DateTime e = DateTime.Parse(trip.EndDate);
-
+                trip._StartDate = s;
+                trip._EndDate = e;
                 DateTime start = DateTime.Parse(obj.StartDate);
                 DateTime end = DateTime.Parse(obj.EndDate);
                 if (s < start) s = start;
@@ -243,6 +246,7 @@ namespace Attendance.Common
 
                     //DataSet ds1 = dboa.ExeQuery($@"select LASTNAME,MOBILE from HRMRESOURCE where id={trip1.UID}");
                     DataRow[] Rows = ds1.Tables[0].Select($"ID={trip1.UID}");
+                    trip1.LOGINID = Rows[0]["LOGINID"].ToString();
                     trip1.MOBILE = Rows[0]["MOBILE"].ToString();
                     trip1.LASTNAME = Rows[0]["LASTNAME"].ToString();
                     trip1.Title = trip.Title;
@@ -250,6 +254,8 @@ namespace Attendance.Common
                     trip1.REQUESTID = trip.REQUESTID;
                     trip1.StartDate = trip.StartDate;
                     trip1.EndDate = trip.EndDate;
+                    trip1._StartDate = DateTime.Parse(trip.StartDate);
+                    trip1._EndDate = DateTime.Parse(trip.EndDate); ;
                     trip1.Days = trip.Days;
                     key = trip1.UID + trip1.StartDate + trip1.EndDate;
                     if (cacheDic.Keys.Contains(key) == false)
@@ -510,9 +516,9 @@ namespace Attendance.Common
             }
             return null;
         }
-        public static Person QueryPersonAtt(string uid, string start_date, string end_date, List<Trip> list_trip, List<UserRel> list_user_rel, DataSet dsLeave)
+        public  Person QueryPersonAtt(string uid, string start_date, string end_date, List<Trip> list_trip, List<UserRel> list_user_rel, DataSet dsLeave)
         {
-            DBOA dboa = new DBOA();
+           
             DataSet ds = null;
             Person p = new Person();
 
@@ -528,7 +534,7 @@ namespace Attendance.Common
 
                 if (ds == null || ds.Tables[0].Rows.Count == 0)
                 {
-                    dboa.Close();
+                   
                     return p;
                 }
                 p.UID = uid;
@@ -571,7 +577,7 @@ namespace Attendance.Common
                 //    ds.Tables[0].Rows.Add(rows[i]);
                 //}
             }
-            dboa.Close();
+            
             Dictionary<int, double> dic = new Dictionary<int, double>();
             dic.Add(0, 0);
             dic.Add(1, 0);
@@ -752,7 +758,7 @@ namespace Attendance.Common
             }
             return str;
         }
-        public static List<Att> GetPersonAtt(string att_uid, string Month, string oa_login_id)
+        public  List<Att> GetPersonAtt(string att_uid, string Month, string oa_login_id,bool is_show_all = false,bool is_use_trip_cache=false)
         {
            
             DBAtt130 db = new DBAtt130();
@@ -778,13 +784,13 @@ namespace Attendance.Common
             Dictionary<string, Gongchu> dic_gongchu = new Dictionary<string, Gongchu>();
             if (ds.Tables[0].Rows.Count > 0)
             {
-                DBOA dboa = new DBOA();
+               
                 DataSet dsoa = dboa.ExeQuery($@"select a.*,b.LASTNAME,b.MOBILE,c.NOWNODETYPE from 
                                     (formtable_main_555 a left join  HRMRESOURCE b on (a.OWNER=b.id) ) 
                                     left join workflow_nownode c on a.REQUESTID=c.REQUESTID 
 								    where  date_time_gc>='{dd.ToString("yyyy-MM-dd")}' and date_time_gc<='{dd.AddDays(Days).ToString("yyyy-MM-dd")}' 
                                     and b.LOGINID = '{oa_login_id}' order by b.LASTNAME ASC");
-                dboa.Close();
+                
                 for (int i = 0; i < dsoa.Tables[0].Rows.Count; i++)
                 {
 
@@ -890,6 +896,60 @@ namespace Attendance.Common
             {
                 list.Add(item.Value);
             }
+            //-----------------------------------------
+            if (is_show_all == true)
+            {
+                LeaveQuest leaveObj = new LeaveQuest();
+                leaveObj.LASTNAME = "";
+                leaveObj.StartDate = $"{Month}-01";
+                leaveObj.EndDate = DateTime.Parse(leaveObj.StartDate).AddDays(Days).ToString("yyyy-MM-dd");
+                TokenObj tokenObj = new TokenObj();
+                tokenObj.uid = oa_login_id;
+                tokenObj.type = "0";
+                List<LeaveQuest> list_leave = QueryLeave(leaveObj, tokenObj);
+                Trip t = new Trip();
+                t.StartDate = leaveObj.StartDate;
+                t.EndDate = leaveObj.EndDate;
+                t.UID = oa_login_id;
+                t.LASTNAME = "";
+                List<Trip> list_trip = list_trip_cache; ;
+                if (is_use_trip_cache==false|| list_trip == null)
+                {
+                    list_trip = QueryTrip(t);
+                }
+                
+                List<Trip> _list_trip = new List<Trip>();
+                for (int i = 0; i < list_trip.Count; i++)
+                {
+                    if (list_trip[i].LOGINID == oa_login_id)
+                    {
+                        _list_trip.Add(list_trip[i]);
+                    }
+                }
+                for (int i = 0; i < list.Count; i++)
+                {
+                    DateTime date = DateTime.Parse(list[i].date_day);
+                    for (int j = 0; j < list_leave.Count; j++)
+                    {
+
+                        if (date >= list_leave[j]._StartDate && date <= list_leave[j]._EndDate)
+                        {
+                            list[i].range = "休假";
+                        }
+                    }
+                    for (int j = 0; j < _list_trip.Count; j++)
+                    {
+
+                        if (date >= _list_trip[j]._StartDate && date <= _list_trip[j]._EndDate)
+                        {
+                            list[i].range = "出差";
+                            list[i].memo = _list_trip[j].Title;
+                        }
+                    }
+
+                }
+            }
+            
             return list;
         }
         public int AddLog(string uid, string text)
@@ -920,7 +980,7 @@ namespace Attendance.Common
                 return 0;
             }
         }
-        private static int StringToInt(string num)
+        private int StringToInt(string num)
         {
             try
             {
@@ -955,11 +1015,11 @@ namespace Attendance.Common
                     return true;
 
                 ////0为工作日，1为周末，2为法定节假日http://tool.bitefu.net/jiari/?d=20190913
-                string res = Get("http://tool.bitefu.net/jiari/?d=" + param);
-                if (res=="1"||res=="2")
-                {
-                    return true;
-                }
+                //string res = Get("http://tool.bitefu.net/jiari/?d=" + param);
+                //if (res=="1"||res=="2")
+                //{
+                //    return true;
+                //}
             }
             catch
             {

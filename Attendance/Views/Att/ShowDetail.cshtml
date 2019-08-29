@@ -65,7 +65,9 @@
         <form id="form1">
             选择月份
             <input id="attYearMonth" onclick="setmonth(this)" readonly="readonly" type="text">
-            <a id="btn_see" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:200px" onclick="GetPersonAtt()">查看我的打卡记录</a>
+            <input type="checkbox" checked id="is_show_all" value=""><span>在报表中标注出差和休假</span>
+            <a id="btn_see" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:180px" onclick="GetPersonAtt()">查看我的打卡记录</a>
+
         </form>
 
     </div>

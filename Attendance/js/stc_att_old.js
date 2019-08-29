@@ -20,7 +20,7 @@ $(document).ready(function () {
 
             var request_data = {
                 Token: Token, UID: row.UID, LOGINID: row.LOGINID, LASTNAME: row.LASTNAME,
-                StartDate: start_date, EndDate: end_date, att_userid: row.att_userid
+                StartDate: start_date, EndDate: end_date, att_userid: row.att_userid,is_show_all:true
             };
             console.log(request_data);
             var url = "/API/APIAtt/GetPersonTripandLeaveDetail";

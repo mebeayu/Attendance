@@ -239,9 +239,9 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            
-            List<LeaveQuest> list = AttBiz.QueryLeave(obj, tokenObj);
-           
+            AttBiz attbiz = new AttBiz();
+            List<LeaveQuest> list = attbiz.QueryLeave(obj, tokenObj);
+            attbiz.Close();
             int n = list.Count;
             for (int i = 0; i < n; i++)
             {
@@ -260,9 +260,9 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            //AttBiz attbiz = new AttBiz();
-            List<Trip> list = AttBiz.QueryTrip(obj, tokenObj);
-            //attbiz.Close();
+            AttBiz attbiz = new AttBiz();
+            List<Trip> list = attbiz.QueryTrip(obj, tokenObj);
+            attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = list;
             return data;
@@ -306,15 +306,15 @@ namespace Attendance.API
         [ActionName("QueryPerson")]
         public DataResult QueryPerson([FromBody]Person obj)
         {
-            //AttBiz attbiz = new AttBiz();
+            AttBiz attbiz = new AttBiz();
             Trip t = new Trip();
             t.StartDate = obj.StartDate;
             t.EndDate = obj.EndDate;
             t.UID = obj.UID;
             t.LASTNAME = "";
-            List<Trip> list = AttBiz.QueryTrip(t);
-            Person p = AttBiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list,null,null);
-           
+            List<Trip> list = attbiz.QueryTrip(t);
+            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list,null,null);
+            attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = p;
             return data;
@@ -384,8 +384,11 @@ namespace Attendance.API
             DBAtt130 db = new DBAtt130();
             ds = db.ExeQuery($"select USERID from USERINFO where PAGER='{mobile}'");
             db.Close();
+            AttBiz attbiz = new AttBiz();
             string att_uid = ds.Tables[0].Rows[0][0].ToString();
-            List<Att> list_att = AttBiz.GetPersonAtt(att_uid, obj.Month, tokenObj.uid);
+            
+            List<Att> list_att = attbiz.GetPersonAtt(att_uid, obj.Month, tokenObj.uid, obj.is_show_all);
+            attbiz.Close();
             if (list_att == null)
             {
                 return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
@@ -415,21 +418,22 @@ namespace Attendance.API
             t.UID = obj.UID;
             t.LASTNAME = "";
             List<Trip> list_trip = AttBiz.list_trip_cache;
+            AttBiz attbiz = new AttBiz();
             if (list_trip == null)
             {
-                list_trip = AttBiz.QueryTrip(t);
+                list_trip = attbiz.QueryTrip(t);
             }
 
             LeaveQuest leaveObj = new LeaveQuest();
             leaveObj.LASTNAME = obj.LASTNAME;
             leaveObj.StartDate = obj.StartDate;
             leaveObj.EndDate = obj.EndDate;
-            List<LeaveQuest> list_leave = AttBiz.QueryLeave(leaveObj);
+            List<LeaveQuest> list_leave = attbiz.QueryLeave(leaveObj);
             List<Trip> list_trip_one = new List<Trip>();
 
             List<Att> list_att = new List<Att>();
-            if (obj.att_userid!=null&& obj.att_userid != "") list_att = AttBiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7),obj.LOGINID);
-           
+            if (obj.att_userid!=null&& obj.att_userid != "") list_att = attbiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7),obj.LOGINID,true,true);
+            attbiz.Close();
             for (int i = 0; i < list_trip.Count; i++)
             {
                 if (list_trip[i].UID == obj.UID) list_trip_one.Add(list_trip[i]);

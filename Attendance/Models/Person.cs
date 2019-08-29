@@ -40,6 +40,7 @@ namespace Attendance.Models
         public string Base64 { get; set; }
         public string fileName { get; set; }
         public string Month { get; set; }
+        public bool is_show_all { get; set; }
     }
 
     public class DayDetail

@@ -37,6 +37,8 @@ namespace Attendance.Models
 
         public string StartDate { get; set; }
         public string EndDate { get; set; }
+        public DateTime _StartDate { get; set; }
+        public DateTime _EndDate { get; set; }
         public int NOWNODETYPE { get; set; }
     }
 }
