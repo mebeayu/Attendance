@@ -175,6 +175,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AccessTokenObj.cs" />
     <Compile Include="Models\Att.cs" />
     <Compile Include="Models\DateRange.cs" />
     <Compile Include="Models\Gongchu.cs" />

@@ -257,7 +257,7 @@ function opmy(id){
 }*/
 
 function att(id){
-	window.open("http://220.163.109.227:86/Att/PointOA?oa_login_id="+id);
+	window.open("http://kq.ynctzy.com:86/Att/PointOA?oa_login_id="+id);
 }
 function mail(id){
 	jQuery.post("/yxp/coremaillogin.jsp",{loginid:id},function(res){

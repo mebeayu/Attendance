@@ -21,6 +21,7 @@ namespace Attendance.Common
     public class AttBiz
     {
         public static List<Trip> list_trip_cache = null;
+        public static DataSet oa_user_cache = null;
         DBOA dboa;
         //private static Dictionary<string, List<Trip>> cacheTripList;
         public AttBiz()
@@ -37,6 +38,31 @@ namespace Attendance.Common
             DataSet ds = dboa.ExeQuery($@"select ID from HRMRESOURCE where LOGINID='{LoginID}'");
             if (ds.Tables[0].Rows.Count > 0) return ds.Tables[0].Rows[0][0].ToString();
             else return null;
+        }
+        public string GetOALoginIDByID(string ID)
+        {
+            DataSet ds = dboa.ExeQuery($@"select LOGINID from HRMRESOURCE where ID={ID}");
+            if (ds.Tables[0].Rows.Count > 0) return ds.Tables[0].Rows[0][0].ToString();
+            else return null;
+        }
+        public string GetOALoginIDByIMobile(string Mobile)
+        {
+            if (oa_user_cache==null)
+            {
+                oa_user_cache = dboa.ExeQuery("select ID,LOGINID,MOBILE from HRMRESOURCE");
+            }
+            DataRow[] rows = oa_user_cache.Tables[0].Select($"MOBILE='{Mobile}'");
+            if (rows.Length==0)
+            {
+                DataSet ds = dboa.ExeQuery($@"select LOGINID from HRMRESOURCE where MOBILE='{Mobile}'");
+                if (ds.Tables[0].Rows.Count > 0) return ds.Tables[0].Rows[0][0].ToString();
+                else return null;
+            }
+            else
+            {
+                return rows[0]["LOGINID"].ToString();
+            }
+            
         }
         public  List<Gongchu> QueryGongchu(string Name, string StartDate, string EndDate, TokenObj tokenObj = null)
         {
