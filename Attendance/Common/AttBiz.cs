@@ -1053,6 +1053,23 @@ namespace Attendance.Common
             }
             return isHoliday;
         }
+        public static string Post(string url,Object JsonObj)
+        {
+            string jsonParam = JsonConvert.SerializeObject(JsonObj);
+            
+            var request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = "application/json;charset=UTF-8";
+            byte[] byteData = Encoding.UTF8.GetBytes(jsonParam);
+            int length = byteData.Length;
+            request.ContentLength = length;
+            Stream writer = request.GetRequestStream();
+            writer.Write(byteData, 0, length);
+            writer.Close();
+            var response = (HttpWebResponse)request.GetResponse();
+            var responseString = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding("utf-8")).ReadToEnd();
+            return responseString.ToString();
+        }
         public static string Get(string url)
         {
             System.GC.Collect();
@@ -1127,5 +1144,25 @@ namespace Attendance.Common
             return true;
 
         }
+        public static string corpid = "ww5d7830e6b916faed";
+        public static string secret = "1QEJGGiBvKwMw-29o3OVFXXHLH_nrom_V3TTc19gukI";//考勤查询应用的secret
+        public static AccessTokenObj access_token_obj_cache = null;
+        public static string GetAccessToken()
+        {
+            if (access_token_obj_cache == null || access_token_obj_cache.expires_time < DateTime.Now)
+            {
+                string request_uri = $"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corpid}&corpsecret={secret}";
+                string access_token_str = Get(request_uri);
+                access_token_obj_cache = JsonConvert.DeserializeObject<AccessTokenObj>(access_token_str);
+                access_token_obj_cache.expires_time = DateTime.Now.AddSeconds(access_token_obj_cache.expires_in);
+
+            }
+
+            if (access_token_obj_cache.errcode == 0)
+                return access_token_obj_cache.access_token;
+            else return "";
+
+        }
+
     }
 }

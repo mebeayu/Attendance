@@ -17,6 +17,7 @@ using System.IO;
 using System.Data.SqlClient;
 using WorkflowService.Models;
 using WorkflowService;
+using Attendance.Controllers;
 
 namespace Attendance.API
 {
@@ -486,6 +487,24 @@ namespace Attendance.API
             }
             return data;
         }
+        [HttpPost]
+        public  int SendMessage([FromBody]QywxMessage obj)
+        {
+            /*
+             * {
+	                touser:"4258",
+	                text:{content:"hello"},
+	                msgtype:"text"
+                }
+             */
+            QywxMessage msgObj = obj;
+            msgObj.agentid = 1000018;
+            string access_token = AttBiz.GetAccessToken();
+            string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";
+            dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
+            return res.errcode;
+        }
+
         public string TranLeaveType(int type)
         {
             if (type < 0)

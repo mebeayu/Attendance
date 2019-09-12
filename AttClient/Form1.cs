@@ -1,13 +1,17 @@
 ﻿using Attendance.Common;
 using Attendance.Models;
+using Common;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,101 +19,119 @@ namespace AttClient
 {
     public partial class Form1 : Form
     {
-        List<Person> list;
+        private DateTime time_line = DateTime.Now;
+        private bool IsStop = false;
+        Thread thread;
+        DBAtt130 db = new DBAtt130();
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void button_Open_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Excel文件(*.xls;*.xlsx)|*.xls;*.xlsx|所有文件|*.*";
-            ofd.ValidateNames = true;
-            ofd.CheckPathExists = true;
-            ofd.CheckFileExists = true;
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                string strFileName = ofd.FileName;
-                AttBiz attBiz = new AttBiz();
-                list = attBiz.StcAttFromLoaclExcel(strFileName, StartDate.Value.ToString("yyyy-MM-dd"), EndDate.Value.ToString("yyyy-MM-dd"));
-                int n = list.Count;
-                listView.Items.Clear();
-                for (int i = 0; i < n; i++)
-                {
-                    ListViewItem lt = new ListViewItem();
-                    lt.Text = list[i].LASTNAME;
-                    lt.SubItems.Add(list[i].MOBILE);
-                    lt.SubItems.Add(list[i].Department);
-                    lt.SubItems.Add(list[i].WorkDay.ToString());
-                    lt.SubItems.Add(list[i].AttDay.ToString());
-                    lt.SubItems.Add(list[i].LateCount.ToString());
-                    lt.SubItems.Add(list[i].EarlyCount.ToString());
-                    lt.SubItems.Add(list[i].Trip.ToString());
-                    lt.SubItems.Add(list[i].Leave0.ToString());
-                    lt.SubItems.Add(list[i].Leave1.ToString());
-                    lt.SubItems.Add(list[i].Leave2.ToString());
-                    lt.SubItems.Add(list[i].Leave3.ToString());
-                    lt.SubItems.Add(list[i].Leave4.ToString());
-                    lt.SubItems.Add(list[i].Leave5.ToString());
-                    lt.SubItems.Add(list[i].Leave6.ToString());
-                    lt.SubItems.Add(list[i].Leave7.ToString());
-                    listView.Items.Add(lt);
-                }
-            }
-        }
-        
+
+
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+
+            QyWxUserManage.UpdateQyWxUserList();
+            thread = new Thread(Watch);
+            thread.Start();
         }
 
-        private void buttonExport_Click(object sender, EventArgs e)
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            SaveFileDialog ofd = new SaveFileDialog();
-            ofd.Filter = "csv文件(*.csv)|*.csv|所有文件|*.*";
-            ofd.ValidateNames = true;
-            ofd.CheckPathExists = true;
-            //ofd.CheckFileExists = true;
-            if (ofd.ShowDialog() == DialogResult.OK)
+            IsStop = true;
+            thread.Abort();
+        }
+        public void Watch()
+        {
+            DataSet ds = null;
+            UpdateText($"--------------{time_line.ToString("yyyy-MM-dd HH:mm:ss")}---------------\r\n");
+            while (IsStop == false)
             {
-                string path = ofd.FileName;
-                if (File.Exists(path))
+                try
                 {
-                    try
+                    
+                    ds = db.ExeQuery($@"SELECT  a.[USERID],b.NAME,b.PAGER
+                                      ,[CHECKTIME]
+                                      ,[CHECKTYPE]
+                                      , a.[VERIFYCODE]
+                                      ,[SENSORID]
+                                      ,[Memoinfo]
+                                      ,[WorkCode]
+                                      ,[sn]
+                                      ,[UserExtFmt]
+                                  FROM[att].[dbo].[CHECKINOUT] a left join USERINFO b on b.USERID = a.USERID 
+                                    where a.CHECKTIME>'{time_line.ToString("yyyy-MM-dd HH:mm:ss")}' order by a.CHECKTIME asc");
+                   
+                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                     {
-                        File.Delete(path);
-                    }
-                    finally { };
-                }
+                        string mobile = ds.Tables[0].Rows[i]["PAGER"].ToString();
+                        DateTime CHECKTIME = DateTime.Parse(ds.Tables[0].Rows[i]["CHECKTIME"].ToString());
+                        string SENSORID = ds.Tables[0].Rows[i]["SENSORID"].ToString();
+                        string userid = QyWxUserManage.GetQyWxUseridByMobile(mobile);
+                        if (userid != "")
+                        {
+                            QywxMessage msgObj = new QywxMessage();
+                            msgObj.touser = userid;
+                            msgObj.msgtype = "text";
+                            msgObj.text = new text();
+                            msgObj.text.content = $"最近打卡 {GetPos(SENSORID)} 时间:{CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")}";
+                            msgObj.agentid = 1000018;
+                            string access_token = AttBiz.GetAccessToken();
+                            string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";
+                            //dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
+                            AttBiz.Post(url, msgObj);
 
-                System.IO.FileStream fs = new System.IO.FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
-                StreamWriter m_streamWriter = new StreamWriter(fs, System.Text.Encoding.Default);
-                m_streamWriter.WriteLine("姓名,电话,部门,应勤,实勤,迟到,早退,出差,事假,病假,婚假,产假,丧假,年休假,其他,陪产假");
-                for (int i = 0; i < listView.Items.Count; i++)
-                {
-                    string line = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}",
-                        listView.Items[i].Text,
-                        listView.Items[i].SubItems[1].Text,
-                        listView.Items[i].SubItems[2].Text,
-                        listView.Items[i].SubItems[3].Text,
-                        listView.Items[i].SubItems[4].Text,
-                        listView.Items[i].SubItems[5].Text,
-                        listView.Items[i].SubItems[6].Text,
-                        listView.Items[i].SubItems[7].Text,
-                        listView.Items[i].SubItems[8].Text,
-                        listView.Items[i].SubItems[9].Text,
-                        listView.Items[i].SubItems[10].Text,
-                        listView.Items[i].SubItems[11].Text,
-                        listView.Items[i].SubItems[12].Text,
-                        listView.Items[i].SubItems[13].Text,
-                        listView.Items[i].SubItems[14].Text,
-                        listView.Items[i].SubItems[15].Text);
-                    m_streamWriter.WriteLine(line);
+
+                        }
+                        
+                        time_line = CHECKTIME;
+                        UpdateText($"{ds.Tables[0].Rows[i]["NAME"].ToString()} {GetPos(SENSORID)} 打卡时间 {CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")} \r\n");
+                    }
+                    Thread.Sleep(10000);
+                    UpdateText($"--------------{time_line.ToString("yyyy-MM-dd HH:mm:ss")}---------------\r\n");
                 }
-                m_streamWriter.Flush();
-                m_streamWriter.Close();
-                MessageBox.Show("保存完成");
+                catch (Exception ex)
+                {
+                    UpdateText(ex.Message + "\r\n");
+                    Thread.Sleep(10000);
+                    try { db.Close(); } catch { }
+                    db = new DBAtt130();
+
+                }
+                
+                
+                
+            }
+           
+        }
+        private string GetPos(string SENSORID)
+        {
+            if (SENSORID == "101") return "-2楼";
+            if (SENSORID == "102") return "1楼";
+            if (SENSORID == "103") return "LG楼";
+            if (SENSORID == "104") return "-1楼";
+
+            return "";
+        }
+        private delegate void InvokeCallback(string msg); //定义回调函数（代理）格式
+        //Invoke回调函数
+        public void UpdateText(string text)
+        {
+            if (text_Info.InvokeRequired)//当前线程不是创建线程
+                text_Info.Invoke(new InvokeCallback(UpdateText), new object[] { text });//回调
+            else//当前线程是创建线程（界面线程）
+            {
+                int max = 201;
+                text_Info.Text += text;//直接更新
+                if(text_Info.Lines.Length> max)
+                {
+                    int index = text_Info.Text.IndexOf('\n');
+                    text_Info.Text = text_Info.Text.Remove(0, index + 1);//删除第一行
+                }
+                text_Info.Select(text_Info.Text.Length, 0);
+                text_Info.ScrollToCaret();
 
             }
         }
