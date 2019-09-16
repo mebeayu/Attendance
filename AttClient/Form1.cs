@@ -47,6 +47,8 @@ namespace AttClient
         {
             DataSet ds = null;
             UpdateText($"--------------{time_line.ToString("yyyy-MM-dd HH:mm:ss")}---------------\r\n");
+            bool hasData = false;
+            int lineIndex = 1;
             while (IsStop == false)
             {
                 try
@@ -63,7 +65,7 @@ namespace AttClient
                                       ,[UserExtFmt]
                                   FROM[att].[dbo].[CHECKINOUT] a left join USERINFO b on b.USERID = a.USERID 
                                     where a.CHECKTIME>'{time_line.ToString("yyyy-MM-dd HH:mm:ss")}' order by a.CHECKTIME asc");
-                   
+                    hasData = false;
                     for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                     {
                         string mobile = ds.Tables[0].Rows[i]["PAGER"].ToString();
@@ -85,12 +87,17 @@ namespace AttClient
 
 
                         }
-                        
+                        hasData = true;
                         time_line = CHECKTIME;
-                        UpdateText($"{ds.Tables[0].Rows[i]["NAME"].ToString()} {GetPos(SENSORID)} 打卡时间 {CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")} \r\n");
+                        UpdateText($"{lineIndex}. {ds.Tables[0].Rows[i]["NAME"].ToString()} {GetPos(SENSORID)} 打卡时间 {CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")} \r\n");
+                        lineIndex++;
                     }
                     Thread.Sleep(10000);
-                    UpdateText($"--------------{time_line.ToString("yyyy-MM-dd HH:mm:ss")}---------------\r\n");
+                    if (hasData)
+                    {
+                        UpdateText($"{lineIndex}. --------------{time_line.ToString("yyyy-MM-dd HH:mm:ss")}---------------\r\n");
+                        lineIndex++;
+                    }
                 }
                 catch (Exception ex)
                 {

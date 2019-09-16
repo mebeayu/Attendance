@@ -39,6 +39,7 @@
             this.text_Info.Multiline = true;
             this.text_Info.Name = "text_Info";
             this.text_Info.ReadOnly = true;
+            this.text_Info.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.text_Info.Size = new System.Drawing.Size(676, 469);
             this.text_Info.TabIndex = 0;
             // 
@@ -48,6 +49,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(682, 475);
             this.Controls.Add(this.text_Info);
+            this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "考勤数据监控";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
