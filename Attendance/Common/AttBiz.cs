@@ -453,6 +453,7 @@ namespace Attendance.Common
                 if (rows.Length == 0)
                 {
                     list_user_rel[i].oa_userid = "";
+                    list_user_rel[i].oa_department_id = "-1";
                 }
                 else
                 {
@@ -463,6 +464,7 @@ namespace Attendance.Common
                     arrOAUID.Add(list_user_rel[i].oa_userid);
                 }
             }
+            list_user_rel.Sort((a, b) => a.oa_department_id.CompareTo(b.oa_department_id));
             List<string> list_date = new List<string>();
             DateTime first_day = DateTime.Parse(start_date);
             DateTime last_day = DateTime.Parse(end_date);
@@ -490,17 +492,30 @@ namespace Attendance.Common
             List<Gongchu> list_gongchu = QueryGongchu("", start_date, end_date);
 
             List<List<Att>> list = new List<List<Att>>();
+            DBHR db190 = new DBHR();
+            ds = db190.ExeQuery("select * from oa_dept");
+            db190.Close();
+            
             for (int i = 0; i < list_user_rel.Count; i++)
             {
+                if (list_user_rel[i].oa_department_id == null) list_user_rel[i].oa_department_id = "-1";
+                expression = $"oa_dept_id={list_user_rel[i].oa_department_id}";
+                DataRow[] rows = ds.Tables[0].Select(expression);
+                if (rows.Length > 0)
+                {
+                    list_user_rel[i].department = rows[0]["oa_dept_path"].ToString();
+                }
                 List<Att> list_att = this.GetPersonAtt(list_user_rel[i].att_userid, Month, list_user_rel[i].oa_login_id, true,true);
                 for (int j = 0; j < list_att.Count; j++)
                 {
+                    
                     list_att[j].name = list_user_rel[i].name;
                     list_att[j].mobile = list_user_rel[i].mobile;
                     list_att[j].department = list_user_rel[i].department;
                 }
                 list.Add(list_att);
             }
+
             return list;
         }
         public List<Person> StcAttReport(string start_date, string end_date, TokenObj tokenObj)
