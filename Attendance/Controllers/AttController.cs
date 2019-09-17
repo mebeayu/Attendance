@@ -37,6 +37,10 @@ namespace Attendance.Controllers
         {
             return View();
         }
+        public ActionResult StcAttDetail()
+        {
+            return View();
+        }
         public ActionResult PointOA()
         {
             return View();

@@ -66,6 +66,7 @@ namespace AttClient
                                   FROM[att].[dbo].[CHECKINOUT] a left join USERINFO b on b.USERID = a.USERID 
                                     where a.CHECKTIME>'{time_line.ToString("yyyy-MM-dd HH:mm:ss")}' order by a.CHECKTIME asc");
                     hasData = false;
+                    string result = "";
                     for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
                     {
                         string mobile = ds.Tables[0].Rows[i]["PAGER"].ToString();
@@ -80,16 +81,18 @@ namespace AttClient
                             msgObj.text = new text();
                             msgObj.text.content = $"最近打卡 {GetPos(SENSORID)} 时间:{CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")}";
                             msgObj.agentid = 1000018;
-                            string access_token = AttBiz.GetAccessToken();
-                            string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";
-                            //dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
-                            AttBiz.Post(url, msgObj);
+                            //string access_token = AttBiz.GetAccessToken();
+                            string url = $"http://kq.ynctzy.com:86/API/APIATT/SendMessage";
+                            //string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";                            //dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
+                            result = AttBiz.Post(url, msgObj);
 
 
                         }
                         hasData = true;
+                        if (result == "0") result = "消息推送成功";
+                        else result = "消息推送失败";
                         time_line = CHECKTIME;
-                        UpdateText($"{lineIndex}. {ds.Tables[0].Rows[i]["NAME"].ToString()} {GetPos(SENSORID)} 打卡时间 {CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")} \r\n");
+                        UpdateText($"{lineIndex}. {ds.Tables[0].Rows[i]["NAME"].ToString()} {GetPos(SENSORID)} 打卡时间 {CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")} {result}\r\n");
                         lineIndex++;
                     }
                     Thread.Sleep(10000);

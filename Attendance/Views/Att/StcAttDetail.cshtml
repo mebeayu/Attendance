@@ -1,0 +1,78 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="~/Scripts/jquery-easyui-1.5.5.6/themes/bootstrap/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="~/Scripts/jquery-easyui-1.5.5.6/themes/icon.css">
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery-easyui-1.5.5.6/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/DatePicker.js"></script>
+    <script src="~/js/stc_att_detail.js"></script>
+    <meta name="viewport" content="width=device-width" />
+    <title>StcAttDetail</title>
+    <style>
+        table, tr, td {
+            margin: 0px;
+            padding: 0px;
+        }
+        table {
+            border: 1px solid #808080;
+            
+        }
+        td {
+            border: 1px solid #808080;
+            white-space: nowrap;
+        }
+        th {
+            border: 1px solid #808080;
+            white-space: nowrap;
+        }
+        /* css注释：只对table标签设置红色边框样式 */
+    </style>
+</head>
+<body>
+    
+        <div style="margin:auto;z-index: 9999; position: fixed ! important; left: 5px; top: 4px;width:20%">
+            <a id="pro"></a>
+        </div>
+        @*<table id="dg1" class="easyui-datagrid" style="width:90%;height:95%;text-align:center"
+               data-options="singleSelect:true,collapsible:false,toolbar:'#tb1'" rownumbers="true" pagination="false">
+            <thead>
+                <tr>
+
+                    <th data-options="field:'name',resizable:true">姓名</th>
+                    <th data-options="field:'mobile',resizable:true">电话</th>
+                    <th data-options="field:'department',resizable:true">部门</th>
+                    @for (int i = 1; i <= 31; i++)
+                    {
+                        string field = $"d{i}AM";
+                        <th colspan="3" data-options="field:'@field',resizable:true">@i-上午</th>
+                        field = $"d{i}PM";
+                        <th data-options="field:'@field',resizable:true">@i-下午</th>
+                        field = $"d{i}G";
+                        <th data-options="field:'@field',resizable:true">@i-公出</th>
+                    }
+                </tr>
+            </thead>
+        </table>*@
+        <form id="form1">
+            选择月份
+            <input id="attYearMonth" onclick="setmonth(this)" readonly="readonly" type="text">
+
+            <a id="btn_see" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'" style="width:180px" onclick="GetAttDetail()">计算报表</a>
+
+        </form>
+
+
+        <div id="data"></div>
+   
+
+   
+        
+</body>
+</html>

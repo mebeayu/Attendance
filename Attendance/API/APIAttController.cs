@@ -18,6 +18,7 @@ using System.Data.SqlClient;
 using WorkflowService.Models;
 using WorkflowService;
 using Attendance.Controllers;
+using System.Text;
 
 namespace Attendance.API
 {
@@ -368,6 +369,109 @@ namespace Attendance.API
 
             }
             return null;
+        }
+        [HttpPost]
+        [ActionName("GetAllAttDetail")]
+        public DataResult GetAllAttDetail([FromBody]Person obj)
+        {
+    
+            AttBiz attbiz = new AttBiz();
+
+            DateTime dd = DateTime.Parse($"{obj.Month}-01");
+            int Days = DateTime.DaysInMonth(dd.Year, dd.Month);
+            dd = dd.AddDays(Days-1);
+            List<List<Att>> list = attbiz.GetAllAttDetail(obj.Month + "-01", dd.ToString("yyyy-MM-dd"));
+
+            List<object> list_obj = new List<object>();
+            
+            for (int i = 0; i < list.Count; i++)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("{");
+                sb.Append($"name:\"{list[i][0].name}\",");
+                sb.Append($"mobile:\"{list[i][0].mobile}\",");
+                sb.Append($"department:\"{list[i][0].department}\",");
+                int index = 1;
+                string d = "d";
+                for (int j = 0; j < list[i].Count; j++)
+                {
+                    string item = $"{d}{index}AM";
+                    string value = "";
+                    if(!list[i][j].late_tag) value = list[i][j].first_str;
+                    else value =$"<span style='background: orangered' >{list[i][j].first_str}</span> ";
+                    sb.Append($"{item}:\"{value}\",");
+                    item = $"{d}{index}PM";
+                    value = "";
+                    if (!list[i][j].early_tag) { value = list[i][j].last_str; }
+                    else value = $"<span style='background: orangered' >{list[i][j].last_str}</span> ";
+                    sb.Append($"{item}:\"{value}\",");
+                    item = $"{d}{index}G";
+                    value = list[i][j].range;
+                    if (index < list[i].Count) sb.Append($"{item}:\"{value}\",");
+                    else sb.Append($"{item}:\"{value}\"");
+                    index++;
+                }
+                sb.Append("}");
+                string data = sb.ToString();
+                dynamic objData = JsonConvert.DeserializeObject<dynamic>(data);
+                list_obj.Add(objData);
+            }
+
+            //dynamic objData = JsonConvert.DeserializeObject<dynamic>(data);
+            attbiz.Close();
+            DataResult res = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            res.data = list_obj;
+            return res;
+        }
+        [HttpPost]
+        [ActionName("GetAllAttDetailHtml")]
+        public DataResult GetAllAttDetailHtml([FromBody]Person obj)
+        {
+
+            AttBiz attbiz = new AttBiz();
+
+            DateTime dd = DateTime.Parse($"{obj.Month}-01");
+            int Days = DateTime.DaysInMonth(dd.Year, dd.Month);
+            dd = dd.AddDays(Days - 1);
+            List<List<Att>> list = attbiz.GetAllAttDetail(obj.Month + "-01", dd.ToString("yyyy-MM-dd"));
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<table cellspacing='0' cellpadding='0'>");
+            sb.Append("<tr>");
+            sb.Append("<th>姓名</th>");
+            sb.Append("<th>电话</th>");
+            sb.Append("<th>部门</th>");
+            dd = DateTime.Parse($"{obj.Month}-01");
+            for (int i = 0; i < Days; i++)
+            {
+                sb.Append($"<th colspan='3'>{i+1} {AttBiz.GetWeekString((int)dd.DayOfWeek)}</th>");
+                dd = dd.AddDays(1);
+                //sb.Append($"<th></th>");
+                //sb.Append($"<th></th>");
+            }
+            sb.Append("</tr>");
+            for (int i = 0; i < list.Count; i++)
+            {
+                sb.Append("<tr>");
+
+                sb.Append($"<td>{list[i][0].name}</td>");
+                sb.Append($"<td>{list[i][0].mobile}</td>");
+                sb.Append($"<td>{list[i][0].department}</td>");
+                for (int j = 0; j < list[i].Count; j++)
+                {
+                    if(list[i][j].late_tag==true) sb.Append($"<td  style='background: orangered'>{list[i][j].first_str}</td>");
+                    else sb.Append($"<td>{list[i][j].first_str}</td>");
+                    if (list[i][j].early_tag == true) sb.Append($"<td  style='background: orangered'>{list[i][j].last_str}</td>");
+                    else sb.Append($"<td>{list[i][j].last_str}</td>");
+                    sb.Append($"<td>{list[i][j].range}</td>");
+                }
+                sb.Append("</tr>");
+            }
+            sb.Append("</table>");
+            //dynamic objData = JsonConvert.DeserializeObject<dynamic>(data);
+            attbiz.Close();
+            DataResult res = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+            res.data = sb.ToString();
+            return res;
         }
         [HttpPost]
         [ActionName("GetPersonAtt")]

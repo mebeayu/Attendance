@@ -22,5 +22,6 @@ namespace Attendance.Models
         public bool is_holiday { get; set; }
         public string range { get; set; }
         public string memo { get; set; }
+        public string department { get; set; }
     }
 }

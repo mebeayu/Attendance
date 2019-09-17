@@ -403,15 +403,110 @@ namespace Attendance.Common
             p.SumAtt = p.AttDay + p.Trip + p.Leave0 + p.Leave1 + p.Leave2 + p.Leave3 + p.Leave4 + p.Leave5 + p.Leave6 + p.Leave7 + p.Gongchu;
             return p;
         }
+        public List<List<Att>> GetAllAttDetail(string start_date,string end_date)
+        {
+            DateTime d = DateTime.Parse(start_date);
+            string Month = d.ToString("yyyy-MM");
+            DBAtt130 db130 = new DBAtt130();
+            DataSet ds = null;
+            ds = db130.ExeQuery("select USERID,PAGER,NAME from USERINFO");
+
+            List<UserRel> list_user_rel = new List<UserRel>();//用户对照
+            List<string> mobiles = new List<string>();
+            for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+            {
+                UserRel ur = new UserRel();
+                ur.att_userid = ds.Tables[0].Rows[i][0].ToString();
+                ur.mobile = ds.Tables[0].Rows[i][1].ToString();
+                ur.name = ds.Tables[0].Rows[i][2].ToString();
+                list_user_rel.Add(ur);
+                mobiles.Add($"'{ur.mobile}'");
+            }
+            string mobile_str = string.Join(",", mobiles);
+            //ds = db130.ExeQuery($@"select USERID,convert(varchar(10),CHECKTIME,120) as date_day,MIN(CHECKTIME) as f,MAX(CHECKTIME) as l 
+            //                    from CHECKINOUT where convert(varchar(10),CHECKTIME,120)>='{start_date}' and convert(varchar(10),CHECKTIME,120)<='{end_date}'
+            //                    GROUP BY convert(varchar(10),CHECKTIME,120),USERID");
+            //List<Att> list_att_record = new List<Att>();//考勤记录
+            //for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+            //{
+            //    Att a = new Att();
+            //    a.att_userid = ds.Tables[0].Rows[i]["USERID"].ToString();
+            //    a.date_day = ds.Tables[0].Rows[i]["date_day"].ToString();
+            //    a.first = DateTime.Parse(ds.Tables[0].Rows[i]["f"].ToString());
+            //    a.last = DateTime.Parse(ds.Tables[0].Rows[i]["l"].ToString());
+            //    list_att_record.Add(a);
+            //}
+            db130.Close();
+            DBOA dboa = new DBOA();//$@"select LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID from HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID where a.id ={ uid}"
+            ds = dboa.ExeQuery($@"select a.ID,LASTNAME,MOBILE,DEPARTMENTNAME,LOGINID,a.DEPARTMENTID from 
+                                HRMRESOURCE a left join HRMDEPARTMENT b on a.DEPARTMENTID = b.ID  where a.MOBILE in({mobile_str})");
+            DataSet dsLeave = dboa.ExeQuery($@"select * from formtable_main_242  a left join  workflow_nownode b on a.REQUESTID=b.REQUESTID
+                where b.NOWNODETYPE=3 and 
+                ((xjsq10>='{start_date}' and xjsq10<='{end_date}') or (xjsq17>='{start_date}' and xjsq17<='{end_date}'))");
+            dboa.Close();
+            string expression = "";
+            List<string> arrOAUID = new List<string>();
+            for (int i = 0; i < list_user_rel.Count; i++)
+            {
+                expression = $"MOBILE='{list_user_rel[i].mobile}'";
+                DataRow[] rows = ds.Tables[0].Select(expression);
+                if (rows.Length == 0)
+                {
+                    list_user_rel[i].oa_userid = "";
+                }
+                else
+                {
+                    list_user_rel[i].oa_userid = rows[0]["ID"].ToString();
+                    list_user_rel[i].oa_login_id = rows[0]["LOGINID"].ToString();
+                    list_user_rel[i].department = rows[0]["DEPARTMENTNAME"].ToString();
+                    list_user_rel[i].oa_department_id = rows[0]["DEPARTMENTID"].ToString();
+                    arrOAUID.Add(list_user_rel[i].oa_userid);
+                }
+            }
+            List<string> list_date = new List<string>();
+            DateTime first_day = DateTime.Parse(start_date);
+            DateTime last_day = DateTime.Parse(end_date);
+            int work_day = 0;
+            while (first_day <= last_day)
+            {
+                bool IsHoliday = IsHolidayByDate(first_day);
+
+                if (IsHoliday == false)
+                {
+                    work_day++;
+                    list_date.Add(first_day.ToString("yyyy-MM-dd"));
+                }
+
+                first_day = first_day.AddDays(1);
+            }
+            Trip t = new Trip();
+            t.StartDate = start_date;
+            t.EndDate = end_date;
+            t.UID = "";
+            t.LASTNAME = "";
+
+            List<Trip> list_trip = QueryTrip(t, null, arrOAUID);
+            list_trip_cache = list_trip;
+            List<Gongchu> list_gongchu = QueryGongchu("", start_date, end_date);
+
+            List<List<Att>> list = new List<List<Att>>();
+            for (int i = 0; i < list_user_rel.Count; i++)
+            {
+                List<Att> list_att = this.GetPersonAtt(list_user_rel[i].att_userid, Month, list_user_rel[i].oa_login_id, true,true);
+                for (int j = 0; j < list_att.Count; j++)
+                {
+                    list_att[j].name = list_user_rel[i].name;
+                    list_att[j].mobile = list_user_rel[i].mobile;
+                    list_att[j].department = list_user_rel[i].department;
+                }
+                list.Add(list_att);
+            }
+            return list;
+        }
         public List<Person> StcAttReport(string start_date, string end_date, TokenObj tokenObj)
         {
             DBAtt130 db130 = new DBAtt130();
             DataSet ds = null;
-
-            if (tokenObj.type == "100")
-            {
-
-            }
             ds = db130.ExeQuery("select USERID,PAGER,NAME from USERINFO");
 
             List<UserRel> list_user_rel = new List<UserRel>();//用户对照
@@ -753,7 +848,7 @@ namespace Attendance.Common
             db.Close();
             return list;
         }
-        private static string GetWeekString(int week)
+        public static string GetWeekString(int week)
         {
             string str = "";
             switch (week)
@@ -825,7 +920,16 @@ namespace Attendance.Common
                     if (dic_gongchu.Keys.Contains(date) == false)
                     {
                         Gongchu g = new Gongchu();
-                        g.NOWNODETYPE = int.Parse(dsoa.Tables[0].Rows[i]["NOWNODETYPE"].ToString());
+                        try
+                        {
+                            g.NOWNODETYPE = int.Parse(dsoa.Tables[0].Rows[i]["NOWNODETYPE"].ToString());
+                        }
+                        catch (Exception)
+                        {
+                            g.NOWNODETYPE = 0;
+
+                        }    
+                        
                         g.memo = dsoa.Tables[0].Rows[i]["REASON"].ToString();
                         if (range == "0")
                         {

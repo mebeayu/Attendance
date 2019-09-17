@@ -12,11 +12,11 @@ $(document).ready(function () {
     user_inf = JSON.parse(localStorage.getItem("user_info"));
 
     
-    //if (user_inf.type === "0") {
+    if (user_inf.type === "0") {
         
-    //        $("#att_report").hide();
+        $("#stc_att_detail").hide();
        
-    //}
+    }
     uid = localStorage.getItem("uid");
 
     var today = new Date();
@@ -24,6 +24,9 @@ $(document).ready(function () {
     $('#end_time').textbox('setValue', myformatter(today));
     $("#iframe_maincontent").attr("src", "/Att/ShowDetail");
 });
+function stc_att_detail() {
+    $("#iframe_maincontent").attr("src", "/Att/StcAttDetail");
+}
 function stc_leave() {
     $("#iframe_maincontent").attr("src", "/Att/StcOALeave");
 }

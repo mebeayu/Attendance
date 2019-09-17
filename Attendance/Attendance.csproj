@@ -177,6 +177,7 @@
     </Compile>
     <Compile Include="Models\AccessTokenObj.cs" />
     <Compile Include="Models\Att.cs" />
+    <Compile Include="Models\AttDetail.cs" />
     <Compile Include="Models\DateRange.cs" />
     <Compile Include="Models\Gongchu.cs" />
     <Compile Include="Models\LeaveQuest.cs" />
@@ -205,6 +206,7 @@
     <Content Include="js\point_oa.js" />
     <Content Include="js\show_detail.js" />
     <Content Include="js\stc_att.js" />
+    <Content Include="js\stc_att_detail.js" />
     <Content Include="js\stc_att_old.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -236,6 +238,7 @@
     <Content Include="Views\Att\StcAttrOld.cshtml" />
     <Content Include="Views\Att\ShowDetail.cshtml" />
     <Content Include="Views\Att\PointOA.cshtml" />
+    <Content Include="Views\Att\StcAttDetail.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
