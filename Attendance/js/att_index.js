@@ -8,13 +8,13 @@ $(document).ready(function () {
         $('#dlg_login').dialog('open');
         return;
     }
-    
+    $("#stc_att_detail").hide();
     user_inf = JSON.parse(localStorage.getItem("user_info"));
 
     
-    if (user_inf.type === "0") {
+    if (user_inf.type === "100") {
         
-        $("#stc_att_detail").hide();
+        $("#stc_att_detail").show();
        
     }
     uid = localStorage.getItem("uid");
@@ -25,7 +25,8 @@ $(document).ready(function () {
     $("#iframe_maincontent").attr("src", "/Att/ShowDetail");
 });
 function stc_att_detail() {
-    $("#iframe_maincontent").attr("src", "/Att/StcAttDetail");
+    //$("#iframe_maincontent").attr("src", "/Att/StcAttDetail");
+    window.open("/Att/StcAttDetail", "_blank");
 }
 function stc_leave() {
     $("#iframe_maincontent").attr("src", "/Att/StcOALeave");
