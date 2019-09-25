@@ -165,6 +165,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Common\AttBiz.cs" />
+    <Compile Include="Common\DataCatche.cs" />
     <Compile Include="Common\DataResult.cs" />
     <Compile Include="Common\DB.cs" />
     <Compile Include="Common\DES.cs" />

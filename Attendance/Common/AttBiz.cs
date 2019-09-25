@@ -626,9 +626,9 @@ namespace Attendance.Common
                 }
 
             }
-            DBHR db190 = new DBHR();
-            ds = db190.ExeQuery("select * from oa_dept");
-            db190.Close();
+
+            ds = DataCatche.oa_dept_cache;
+            
             for (int i = 0; i < list_person.Count; i++)
             {
                 if (list_person[i].oa_department_id == null) list_person[i].oa_department_id = "-1";
