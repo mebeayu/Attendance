@@ -592,7 +592,21 @@ namespace Attendance.API
             return data;
         }
         [HttpPost]
-        public  int SendMessage([FromBody]QywxMessage obj)
+        [ActionName("GetQywxAccessToken")]
+        public DataResult GetQywxAccessToken([FromBody]QywxMessage obj)
+        {
+            
+            if (obj.totag== "djfhie4ury4")
+            {
+                DataResult res = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+                res.data = AttBiz.GetAccessToken();
+                return res;
+            }
+            return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_AUTH); ;
+        }
+        [HttpPost]
+        [ActionName("SendMessage")]
+        public DataResult SendMessage([FromBody]QywxMessage obj)
         {
             /*
              * {
@@ -606,7 +620,19 @@ namespace Attendance.API
             string access_token = AttBiz.GetAccessToken();
             string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";
             dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
-            return res.errcode;
+            DataResult data = null;
+            if (res.errcode==0)
+            {
+                data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+                data.data = res;
+            }
+            else
+            {
+                data = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
+                
+                data.message = res.errmsg;
+            }
+            return data;
         }
 
         public string TranLeaveType(int type)

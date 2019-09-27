@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Attendance.Models;
+
 namespace AttClient
 {
     public class QyWxReturn
@@ -27,7 +29,16 @@ namespace AttClient
         {
             if(expires_time< DateTime.Now)
             {
-                string access_token = AttBiz.GetAccessToken();
+                QywxMessage obj = new QywxMessage();
+                obj.totag = "djfhie4ury4";
+                string access_token = "";
+                string res = AttBiz.Post("http://kq.ynctzy.com:86/API/APIATT/GetQywxAccessToken", obj);
+                DataResult resObj = JsonConvert.DeserializeObject<DataResult>(res);
+                if (resObj.error_code==0)
+                {
+                    access_token = resObj.data.ToString();
+                }
+                //string access_token = AttBiz.GetAccessToken();
                 string data = AttBiz.Get($"https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token={access_token}&department_id=3&fetch_child=1");
                 QyWxReturn dataObj = JsonConvert.DeserializeObject<QyWxReturn>(data);
                 if (dataObj.errcode == 0)

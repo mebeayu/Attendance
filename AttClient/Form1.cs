@@ -73,6 +73,8 @@ namespace AttClient
                         DateTime CHECKTIME = DateTime.Parse(ds.Tables[0].Rows[i]["CHECKTIME"].ToString());
                         string SENSORID = ds.Tables[0].Rows[i]["SENSORID"].ToString();
                         string userid = QyWxUserManage.GetQyWxUseridByMobile(mobile);
+                        DataResult resObj = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
+                        resObj.message = "用户ID不存在";
                         if (userid != "")
                         {
                             QywxMessage msgObj = new QywxMessage();
@@ -85,12 +87,13 @@ namespace AttClient
                             string url = $"http://kq.ynctzy.com:86/API/APIATT/SendMessage";
                             //string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";                            //dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
                             result = AttBiz.Post(url, msgObj);
+                            resObj = JsonConvert.DeserializeObject<DataResult>(result);
 
 
                         }
                         hasData = true;
-                        if (result == "0") result = "消息推送成功";
-                        else result = "消息推送失败";
+                        if (resObj.error_code == 0) result = "消息推送成功";
+                        else result = "消息推送失败:"+ resObj.message;
                         time_line = CHECKTIME;
                         UpdateText($"{lineIndex}. {ds.Tables[0].Rows[i]["NAME"].ToString()} {GetPos(SENSORID)} 打卡时间 {CHECKTIME.ToString("yyyy-MM-dd HH:mm:ss")} {result}\r\n");
                         lineIndex++;

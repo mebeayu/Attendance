@@ -51,7 +51,7 @@
             this.Controls.Add(this.text_Info);
             this.MaximizeBox = false;
             this.Name = "Form1";
-            this.Text = "考勤数据监控";
+            this.Text = "考勤数据监控及消息推送";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
