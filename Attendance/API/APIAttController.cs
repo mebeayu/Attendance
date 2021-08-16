@@ -24,7 +24,7 @@ namespace Attendance.API
 {
     public class APIAttController : ApiController
     {
-        
+
         int code = 0;
         private static Dictionary<string, string> tokenCache = new Dictionary<string, string>();
         public static string MakeToken(string oa_logid, string psw, string type, string department_id)
@@ -97,12 +97,12 @@ namespace Attendance.API
             string md5PSW = MD5.GetMD5Hash(tokenObj.psw);
             if (md5PSW != ds.Tables[0].Rows[0]["PASSWORD"].ToString())
             {
-                if (tokenObj.psw!= ds.Tables[0].Rows[0]["PASSWORD"].ToString())
+                if (tokenObj.psw != ds.Tables[0].Rows[0]["PASSWORD"].ToString())
                 {
                     code = MessageCode.ERROR_TOKEN_VALIDATE;
                     return null;
                 }
-               
+
             }
 
             tokenCache[tokenObj.uid] = Token;
@@ -117,7 +117,7 @@ namespace Attendance.API
             DBOA dboa = new DBOA();
             DataSet ds = dboa.ExeQuery("select LOGINID,PASSWORD,LASTNAME,MOBILE,DEPARTMENTID from HRMRESOURCE where LOGINID=:LOGINID", new OracleParameter("LOGINID", obj.oa_login_id));
             dboa.Close();
-            if (ds.Tables[0].Rows.Count==0)
+            if (ds.Tables[0].Rows.Count == 0)
             {
                 DataResult r = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
                 r.message = "用户不存在";
@@ -221,13 +221,16 @@ namespace Attendance.API
             }
             db.Close();
             DataResult return_data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
-            string Token = MakeToken(obj.oa_login_id, obj.psw, type, DEPARTMENTID);
+            //string Token = MakeToken(obj.oa_login_id, obj.psw, type, DEPARTMENTID);
+            string Token = MakeToken(obj.oa_login_id, obj.psw, "0", DEPARTMENTID);
             UserInfo u = new UserInfo();
             u.Token = Token;
             u.name = LASTNAME;
-            u.type = type;
+            //u.type = type;
+            u.type = "0";
             u.department_id = DEPARTMENTID;
-            u.department_path = department_path;
+            //u.department_path = department_path;
+            u.department_path = "";
             tokenCache[obj.oa_login_id] = Token;
             return_data.data = u;
             return return_data;
@@ -315,7 +318,7 @@ namespace Attendance.API
             t.UID = obj.UID;
             t.LASTNAME = "";
             List<Trip> list = attbiz.QueryTrip(t);
-            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list,null,null);
+            Person p = attbiz.QueryPersonAtt(obj.LOGINID, obj.StartDate, obj.EndDate, list, null, null);
             attbiz.Close();
             DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
             data.data = p;
@@ -361,7 +364,7 @@ namespace Attendance.API
                 httpPostedFile.SaveAs(filePath);
 
                 AttBiz att = new AttBiz();
-                List<Person> list =  att.StcAttFromLoaclExcel(filePath, start_date, end_date);
+                List<Person> list = att.StcAttFromLoaclExcel(filePath, start_date, end_date);
                 att.Close();
                 DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
                 data.data = list;
@@ -374,16 +377,16 @@ namespace Attendance.API
         [ActionName("GetAllAttDetail")]
         public DataResult GetAllAttDetail([FromBody]Person obj)
         {
-    
+
             AttBiz attbiz = new AttBiz();
 
             DateTime dd = DateTime.Parse($"{obj.Month}-01");
             int Days = DateTime.DaysInMonth(dd.Year, dd.Month);
-            dd = dd.AddDays(Days-1);
+            dd = dd.AddDays(Days - 1);
             List<List<Att>> list = attbiz.GetAllAttDetail(obj.Month + "-01", dd.ToString("yyyy-MM-dd"));
 
             List<object> list_obj = new List<object>();
-            
+
             for (int i = 0; i < list.Count; i++)
             {
                 StringBuilder sb = new StringBuilder();
@@ -397,8 +400,8 @@ namespace Attendance.API
                 {
                     string item = $"{d}{index}AM";
                     string value = "";
-                    if(!list[i][j].late_tag) value = list[i][j].first_str;
-                    else value =$"<span style='background: orangered' >{list[i][j].first_str}</span> ";
+                    if (!list[i][j].late_tag) value = list[i][j].first_str;
+                    else value = $"<span style='background: orangered' >{list[i][j].first_str}</span> ";
                     sb.Append($"{item}:\"{value}\",");
                     item = $"{d}{index}PM";
                     value = "";
@@ -443,7 +446,7 @@ namespace Attendance.API
             dd = DateTime.Parse($"{obj.Month}-01");
             for (int i = 0; i < Days; i++)
             {
-                sb.Append($"<th colspan='3'>{i+1} {AttBiz.GetWeekString((int)dd.DayOfWeek)}</th>");
+                sb.Append($"<th colspan='3'>{i + 1} {AttBiz.GetWeekString((int)dd.DayOfWeek)}</th>");
                 dd = dd.AddDays(1);
                 //sb.Append($"<th></th>");
                 //sb.Append($"<th></th>");
@@ -458,7 +461,7 @@ namespace Attendance.API
                 sb.Append($"<td>{list[i][0].department}</td>");
                 for (int j = 0; j < list[i].Count; j++)
                 {
-                    if(list[i][j].late_tag==true) sb.Append($"<td  style='background: orangered'>{list[i][j].first_str}</td>");
+                    if (list[i][j].late_tag == true) sb.Append($"<td  style='background: orangered'>{list[i][j].first_str}</td>");
                     else sb.Append($"<td>{list[i][j].first_str}</td>");
                     if (list[i][j].early_tag == true) sb.Append($"<td  style='background: orangered'>{list[i][j].last_str}</td>");
                     else sb.Append($"<td>{list[i][j].last_str}</td>");
@@ -482,25 +485,38 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            DBOA dboa = new DBOA();
-            DataSet ds = dboa.ExeQuery($"select id,MOBILE,LOGINID from HRMRESOURCE where LOGINID='{tokenObj.uid}'");
-            string mobile = ds.Tables[0].Rows[0]["MOBILE"].ToString();
-            dboa.Close();
-            DBAtt130 db = new DBAtt130();
-            ds = db.ExeQuery($"select USERID from USERINFO where PAGER='{mobile}'");
-            db.Close();
-            AttBiz attbiz = new AttBiz();
-            string att_uid = ds.Tables[0].Rows[0][0].ToString();
-            
-            List<Att> list_att = attbiz.GetPersonAtt(att_uid, obj.Month, tokenObj.uid, obj.is_show_all);
-            attbiz.Close();
-            if (list_att == null)
+            try
             {
-                return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
+                DBOA dboa = new DBOA();
+                DataSet ds = dboa.ExeQuery($"select id,MOBILE,LOGINID from HRMRESOURCE where LOGINID='{tokenObj.uid}'");
+                string mobile = ds.Tables[0].Rows[0]["MOBILE"].ToString();
+                dboa.Close();
+                DBAtt130 db = new DBAtt130();
+                ds = db.ExeQuery($"select USERID from USERINFO where PAGER='{mobile}'");
+                db.Close();
+                AttBiz attbiz = new AttBiz();
+                string att_uid = ds.Tables[0].Rows[0][0].ToString();
+                List<Att> list_att = null;
+
+                list_att = attbiz.GetPersonAtt(att_uid, obj.Month, tokenObj.uid, obj.is_show_all);
+                attbiz.Close();
+                if (list_att == null)
+                {
+                    return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
+                }
+                DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
+                data.data = list_att;
+                return data;
             }
-            DataResult data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
-            data.data = list_att;
-            return data;
+            catch (Exception ex)
+            {
+
+                DataResult data = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
+                data.message = ex.Message;
+                return data;
+            }
+
+
         }
         /// <summary>
         /// Token,UID,LASTNAME,StartDate,EndDate
@@ -516,7 +532,7 @@ namespace Attendance.API
             {
                 return DataResult.InitFromMessageCode(code);
             }
-            
+
             Trip t = new Trip();
             t.StartDate = obj.StartDate;
             t.EndDate = obj.EndDate;
@@ -537,7 +553,7 @@ namespace Attendance.API
             List<Trip> list_trip_one = new List<Trip>();
 
             List<Att> list_att = new List<Att>();
-            if (obj.att_userid!=null&& obj.att_userid != "") list_att = attbiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0,7),obj.LOGINID,true,true);
+            if (obj.att_userid != null && obj.att_userid != "") list_att = attbiz.GetPersonAtt(obj.att_userid, obj.StartDate.Substring(0, 7), obj.LOGINID, true, true);
             attbiz.Close();
             for (int i = 0; i < list_trip.Count; i++)
             {
@@ -568,7 +584,7 @@ namespace Attendance.API
             DBOA db = new DBOA();
             DataSet ds = db.ExeQuery($@"select * from HRMRESOURCE where LOGINID='{tokenObj.uid}'");
             db.Close();
-            if (ds.Tables[0].Rows.Count==0)
+            if (ds.Tables[0].Rows.Count == 0)
             {
                 return DataResult.InitFromMessageCode(MessageCode.ERROR_NO_DATA);
             }
@@ -578,7 +594,7 @@ namespace Attendance.API
             obj.dpt = ds.Tables[0].Rows[0]["DEPARTMENTID"].ToString();
             int res = OAService.PushGongchu(obj);
             DataResult data = null;
-            if (res>0)
+            if (res > 0)
             {
                 data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
                 data.data = res;
@@ -595,8 +611,8 @@ namespace Attendance.API
         [ActionName("GetQywxAccessToken")]
         public DataResult GetQywxAccessToken([FromBody]QywxMessage obj)
         {
-            
-            if (obj.totag== "djfhie4ury4")
+
+            if (obj.totag == "djfhie4ury4")
             {
                 DataResult res = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
                 res.data = AttBiz.GetAccessToken();
@@ -621,7 +637,7 @@ namespace Attendance.API
             string url = $"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}";
             dynamic res = JsonConvert.DeserializeObject<dynamic>(AttBiz.Post(url, msgObj));
             DataResult data = null;
-            if (res.errcode==0)
+            if (res.errcode == 0)
             {
                 data = DataResult.InitFromMessageCode(MessageCode.SUCCESS);
                 data.data = res;
@@ -629,7 +645,7 @@ namespace Attendance.API
             else
             {
                 data = DataResult.InitFromMessageCode(MessageCode.UNKONWN);
-                
+
                 data.message = res.errmsg;
             }
             return data;
